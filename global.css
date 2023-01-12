@@ -1,0 +1,120 @@
+:root{
+	--panel-background: rgba(44,44,44,0.9);
+	--excerptbar:  rgba(66,66,66,0.9);
+	--selected-line:  rgba(255,255,128,0.1);
+	--heading :hsl(30,70%,70%);
+}
+html {
+	 /* position: relative;  */
+	 overflow-x:hidden;
+	 overflow-y:auto; 
+	 /* width: 100%; */
+	height: 100%; 
+	background:#333333;
+	color:silver;
+	stroke: silver;
+
+}
+body {
+	font-family:"Tahoma","San-Serif" , "Microsoft Yahei UI Light";
+	font-size: 100%;
+	margin: 0px;
+}
+.parallelptk {padding-right:2px ; padding-left:2px;border:dotted 1px white}
+.toolbar {background:  var(--panel-background) ;  ;user-select: none;padding-left:0.5em;padding-right:0.5em}
+.clickable:hover{text-decoration: underline;cursor:pointer}
+
+.unclickable{color: gray}
+/* .closelink{background: hsl(40,20%,30%); } */
+.closelink:hover {text-decoration: line-through;}
+/* .closelink:after {
+	content: '⨯';
+} */
+.active_clickable {background: #555555}
+.activeword {background: hsl(40,70%,70%);color:black}
+.tocitem {font-weight: bold; text-align: right}
+.uppertoc {opacity:0.3} /*上半段 讀過的*/
+.tocdepth0 {content:attr(id) ;color:  hsl(40,70%,70%)}
+.tocdepth1 {content:attr(id) ;color:  hsl(80,70%,70%)}
+.tocdepth2 {content:attr(id) ;color:  hsl(120,70%,70%)}
+.tocdepth3  {content:attr(id) ;color:  hsl(160,70%,70%)}
+.tocdepth4  {content:attr(id) ;color:  hsl(200,70%,70%)}
+.tocdepth5  {content:attr(id) ;color: hsl(240,70%,70%)}
+.tocdepth6  {content:attr(id) ;color:  hsl(280,70%,70%)}
+.tocdepth7  {content:attr(id) ;color: hsl(320,70%,70%)}
+.tocdepth8  {content:attr(id) ;color:  hsl(360,80%,70%)}
+.field {color: lightsalmon;}
+/* default reader stying */
+.e {color: goldenrod; font-size: 110%}
+.ref {color: pink}
+.cf {color: lightsalmon;}
+.hide {font-size: 0px} /*clipboard cannot copy display:none */
+.ck {color: goldenrod;}
+.ptkHuman {background:goldenrod;color:black}
+
+.abridged{ font-size:75% }
+.inlinenote { position: absolute; background: silver; color: black;
+	border-radius: 0.25em;border: 1px solid black}
+/* editor styling, fix font size, no hiding */
+
+.lesstext:before{content:'▲'}
+.moretext:before{content:'▼'}
+.highlightline:before {content: '→';color:yellow}
+.openexcerpt:before {content:'←';color:yellow}
+/* .lineview {
+	border:1px dashed gray
+} */
+.lineviewitem {
+	padding-left: 5px;
+    line-height: 1.8;
+    padding-right: 5px;
+}
+.lineviewmenu {z-index: 999; 
+	position:absolute;right:0px; padding-right: 0.5em ;user-select: none;}
+.activeline { 
+	padding-left: 1px;
+    border-left: 4px solid gray;
+    border-right: 4px solid gray;
+}
+.highlight {color:rgb(255,255,196)}
+.excerptheading {color: var(--heading) ; padding-right: 0.2em}
+.lineviewheading {color: var(--heading) ;padding: 0.1em}
+.errorcount {color: red}
+.offtagname {color: salmon;}
+.offtag     {background: #444444;}
+.htmltag {color: lightsalmon; }
+.CodeMirror-line span.e {color: goldenrod}
+.CodeMirror-line span.b {font-weight: bold;}
+.CodeMirror-line span.u {text-decoration: underline;}
+
+.footnote { color:salmon;}
+.footnotebutton {font-family: 'Courier New', Courier, monospace;
+	 font-size:75%;position:absolute;color:salmon;font-weight: bold;}
+.hitcount {color:goldenrod;}
+.tofind {background:silver;color:black;padding-left:0.1em;padding-right:0.1em}
+
+@font-face {
+	font-family:"ProvidentPali";
+	src: local("ProvidentPali"), url("ProvidentPaliSegoe.otf") 
+	}
+.lang-pl- {font-family: "ProvidentPali" ; font-size:120%}
+.lang-pl-iast {font-family: "Segoe UI",Tahoma}
+.lang-pl-tb {font-size:120%}
+.lang-en {font-family: "Times New Roman", Georgia;}
+
+.sponser:before {color:gray;content:"護持者🙏" attr(sponser) }
+.pickernode {cursor: pointer;user-select: none;}
+.pickerbutton {padding-right:2px;padding-left: 2px; border-left:1px dotted silver; cursor: pointer;user-select: none;white-space: nowrap;}
+.pickernote {font-size:80%;color:goldenrod}
+.selectedpickernode {color:yellow}
+.refhitcount {font-size:80%;color:goldenrod}
+.divider{width:100%;border-bottom: 1px silver dotted; height:1px}
+.pickercriteria {padding-right:2px;padding-left: 2px; }
+.pickercriteria:after{content:','}
+
+.statebutton{ user-select: none; vertical-align: top;cursor:pointer;fill:var(--button-selected);padding-right:0.2em}
+.statebutton.disabled {cursor:auto;fill:none;stroke:var(--button-unselected) }
+.statebutton.unselected {color:gray}
+.statebutton.disabled:hover {fill:none; stroke: var(--button-unselected)}
+/* .statebutton:hover {color:var(--hover); fill:var(--hover);stroke:var(--hover);} */
+.guidegroup {border: silver 1px dotted;border-radius: 0.25em;}
