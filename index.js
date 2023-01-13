@@ -18528,9 +18528,9 @@
         $:
           $$invalidate(7, showcount = items.length > ITEMPERPAGE3 ? ITEMPERPAGE3 : items.length);
       }
-      if ($$self.$$.dirty & 128) {
+      if ($$self.$$.dirty & 132) {
         $:
-          $$invalidate(8, displayitems = getItems(showcount));
+          $$invalidate(8, displayitems = getItems(showcount, items));
       }
     };
     return [
