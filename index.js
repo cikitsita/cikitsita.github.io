@@ -1405,7 +1405,6 @@
   // ../ptk/fts/constants.ts
   var Word_tailspace_Reg = /([\dA-Za-z\u1000-\u1049\u0900-\u0963\u96f\u00c0-\u02af\u1e00-\u1faf]+ ?)/g;
   var MAXPHRASELEN = 16;
-  var EXCERPT_PAGESIZE = 5;
 
   // ../ptk/fts/tokenize.ts
   function Token(text2, choff, tkoff, type) {
@@ -6196,18 +6195,22 @@
       const linepos = chunktag?.linepos || [];
       const at = bsearchNumber(linepos, line) - 1;
       const lineoff = line - linepos[at];
-      let caption = chunktag?.innertext.get(at);
       const id = chunktag?.fields?.id?.values[at];
       const bkat = this.getNearestTag(line, booktag) - 1;
       const bkid = booktag.fields.id.values[bkat];
+      const caption = this.caption(id, chunktag?.innertext.get(at));
+      return { id, tagname: "ck", caption, lineoff, bkid };
+    }
+    caption(id, defv) {
+      const chunktag = this.defines.ck;
+      let caption = defv;
       const onChunkCaption2 = this.template.onChunkCaption;
       if (!caption) {
         caption = this.columns[chunktag?.column]?.keys?.get(id);
         if (!caption && onChunkCaption2)
           caption = onChunkCaption2(id);
       }
-      const humanId = onChunkCaption2 ? caption : id + "." + caption;
-      return { id, tagname: "ck", caption, lineoff, bkid, humanId };
+      return onChunkCaption2 ? caption : id + "." + caption;
     }
     getPostings(s) {
       const nPostings = this.inverted.nPostingOf(s);
@@ -6231,13 +6234,17 @@
         return null;
       const bkat = this.getNearestTag(line, booktag) - 1;
       const bkid = booktag.fields.id.values[bkat];
+      const id = chunktag.fields.id.values[at - 1];
+      const innertext = chunktag.innertext.get(at - 1);
+      const caption = this.caption(id, innertext);
       return {
         bkid,
+        caption,
         at,
-        id: chunktag.fields.id.values[at - 1],
+        id,
         bk: { id: bkid },
         line: chunktag.linepos[at - 1],
-        innertext: chunktag.innertext.get(at - 1)
+        innertext
       };
     }
     findClosestTag(typedef, key2, value, from = 0) {
@@ -6881,9 +6888,10 @@
           const line = chunktag.linepos[j2];
           const ck = ptk.getNearestChunk(line + 1);
           const address2 = makeChunkAddress(ck);
+          const caption2 = ck.caption;
           if (items.length >= pagesize)
             break;
-          items.push({ id: ck.id, bkid: ck.bkid, title, count: -1, address: address2, line });
+          items.push({ id: ck.id, bkid: ck.bkid, caption: caption2, title, count: -1, address: address2, line });
         }
         this.ownerdraw = { painter: "titlecount", data: {
           last: at2 - at1,
@@ -6902,7 +6910,7 @@
         const pl = plTrim(postings[i], sectionfrom, sectionto);
         const [pllines] = plContain(pl, ptk.inverted.tokenlinepos);
         for (let j2 = 0; j2 < pllines.length; j2++) {
-          const at = bsearchNumber(chunktag.linepos, pllines[j2]) - 1;
+          const at = bsearchNumber(chunktag.linepos, pllines[j2]);
           if (!chunkcountobj[at])
             chunkcountobj[at] = 0;
           chunkcountobj[at]++;
@@ -6923,8 +6931,7 @@
         const chunk = it[0];
         const ck = ptk.getNearestChunk(chunktag.linepos[chunk]);
         const address2 = makeChunkAddress(ck);
-        const title = chunktag.innertext.get(chunk);
-        return { id: ck.id, title, count, address: address2 };
+        return { id: ck.id, count, address: address2, caption: ck.caption, title: ck.caption };
       });
       this.first = 0;
       this.ownerdraw = { painter: "titlecount", data: {
@@ -12710,10 +12717,12 @@
     let t4;
     let t5;
     let span2;
-    let t6_value = ctx[21].end.length + "";
+    let t6_value = "\xB7";
     let t6;
-    let t7_value = " ";
+    let t7_value = ctx[21].end.length + "";
     let t7;
+    let t8_value = " ";
+    let t8;
     let mounted;
     let dispose;
     function click_handler_1() {
@@ -12734,10 +12743,11 @@
         span1 = element("span");
         t3 = text("\xB7");
         t4 = text(t4_value);
-        t5 = text("\xB7\r\n");
+        t5 = space();
         span2 = element("span");
         t6 = text(t6_value);
         t7 = text(t7_value);
+        t8 = text(t8_value);
         attr(span0, "class", "clickable");
         attr(span0, "title", "beginsWith \u5F00\u5934\u7B26\u5408");
         attr(span1, "title", "inMiddle \u4E2D\u95F4\u7B26\u5408");
@@ -12757,6 +12767,7 @@
         insert(target, span2, anchor);
         append(span2, t6);
         append(span2, t7);
+        append(span2, t8);
         if (!mounted) {
           dispose = [
             listen(span0, "click", click_handler_1),
@@ -12774,8 +12785,8 @@
           set_data(t1, t1_value);
         if (dirty & 16 && t4_value !== (t4_value = ctx[21].middle.length + ""))
           set_data(t4, t4_value);
-        if (dirty & 16 && t6_value !== (t6_value = ctx[21].end.length + ""))
-          set_data(t6, t6_value);
+        if (dirty & 16 && t7_value !== (t7_value = ctx[21].end.length + ""))
+          set_data(t7, t7_value);
       },
       d(detaching) {
         if (detaching)
@@ -17395,7 +17406,154 @@
   };
   var abridge_default = Abridge;
 
+  // src/comps/paging.svelte
+  function create_if_block24(ctx) {
+    let span0;
+    let t0_value = ctx[0] + 1 + "";
+    let t0;
+    let t1;
+    let span1;
+    let t2;
+    let mounted;
+    let dispose;
+    return {
+      c() {
+        span0 = element("span");
+        t0 = text(t0_value);
+        t1 = text("/");
+        span1 = element("span");
+        t2 = text(ctx[1]);
+        attr(span0, "class", "clickable pagingbutton");
+        attr(span1, "class", "clickable pagingbutton");
+      },
+      m(target, anchor) {
+        insert(target, span0, anchor);
+        append(span0, t0);
+        append(span0, t1);
+        insert(target, span1, anchor);
+        append(span1, t2);
+        if (!mounted) {
+          dispose = [
+            listen(span0, "click", ctx[4]),
+            listen(span1, "click", ctx[5])
+          ];
+          mounted = true;
+        }
+      },
+      p(ctx2, dirty) {
+        if (dirty & 1 && t0_value !== (t0_value = ctx2[0] + 1 + ""))
+          set_data(t0, t0_value);
+        if (dirty & 2)
+          set_data(t2, ctx2[1]);
+      },
+      d(detaching) {
+        if (detaching)
+          detach(span0);
+        if (detaching)
+          detach(span1);
+        mounted = false;
+        run_all(dispose);
+      }
+    };
+  }
+  function create_fragment32(ctx) {
+    let if_block_anchor;
+    let if_block = ctx[1] > PAGESIZE && create_if_block24(ctx);
+    return {
+      c() {
+        if (if_block)
+          if_block.c();
+        if_block_anchor = empty();
+      },
+      m(target, anchor) {
+        if (if_block)
+          if_block.m(target, anchor);
+        insert(target, if_block_anchor, anchor);
+      },
+      p(ctx2, [dirty]) {
+        if (ctx2[1] > PAGESIZE) {
+          if (if_block) {
+            if_block.p(ctx2, dirty);
+          } else {
+            if_block = create_if_block24(ctx2);
+            if_block.c();
+            if_block.m(if_block_anchor.parentNode, if_block_anchor);
+          }
+        } else if (if_block) {
+          if_block.d(1);
+          if_block = null;
+        }
+      },
+      i: noop,
+      o: noop,
+      d(detaching) {
+        if (if_block)
+          if_block.d(detaching);
+        if (detaching)
+          detach(if_block_anchor);
+      }
+    };
+  }
+  var PAGESIZE = 5;
+  function instance32($$self, $$props, $$invalidate) {
+    let { from } = $$props;
+    let { last } = $$props;
+    const prev = () => {
+      $$invalidate(0, from -= PAGESIZE);
+      if (from < 0)
+        $$invalidate(0, from = 0);
+    };
+    const next = () => {
+      if (from + 5 < last)
+        $$invalidate(0, from += PAGESIZE);
+    };
+    const click_handler = () => prev();
+    const click_handler_1 = () => next();
+    $$self.$$set = ($$props2) => {
+      if ("from" in $$props2)
+        $$invalidate(0, from = $$props2.from);
+      if ("last" in $$props2)
+        $$invalidate(1, last = $$props2.last);
+    };
+    return [from, last, prev, next, click_handler, click_handler_1];
+  }
+  var Paging = class extends SvelteComponent {
+    constructor(options) {
+      super();
+      init(this, options, instance32, create_fragment32, safe_not_equal, { from: 0, last: 1 });
+    }
+  };
+  var paging_default = Paging;
+
   // src/ownerdraw/excerptbar.svelte
+  function create_if_block_42(ctx) {
+    let span;
+    let t_value = ctx[1].humanName(true) + "";
+    let t;
+    let span_title_value;
+    return {
+      c() {
+        span = element("span");
+        t = text(t_value);
+        attr(span, "title", span_title_value = ctx[1].humanName());
+      },
+      m(target, anchor) {
+        insert(target, span, anchor);
+        append(span, t);
+      },
+      p(ctx2, dirty) {
+        if (dirty & 2 && t_value !== (t_value = ctx2[1].humanName(true) + ""))
+          set_data(t, t_value);
+        if (dirty & 2 && span_title_value !== (span_title_value = ctx2[1].humanName())) {
+          attr(span, "title", span_title_value);
+        }
+      },
+      d(detaching) {
+        if (detaching)
+          detach(span);
+      }
+    };
+  }
   function create_if_block_33(ctx) {
     let span;
     let t;
@@ -17411,7 +17569,7 @@
         insert(target, span, anchor);
         append(span, t);
         if (!mounted) {
-          dispose = listen(span, "click", ctx[15]);
+          dispose = listen(span, "click", ctx[12]);
           mounted = true;
         }
       },
@@ -17442,7 +17600,7 @@
         insert(target, span, anchor);
         append(span, t);
         if (!mounted) {
-          dispose = listen(span, "click", ctx[16]);
+          dispose = listen(span, "click", ctx[13]);
           mounted = true;
         }
       },
@@ -17481,44 +17639,31 @@
       }
     };
   }
-  function create_if_block24(ctx) {
-    let t0_value = ctx[6].id + "";
-    let t0;
-    let t1;
+  function create_if_block25(ctx) {
     let span;
-    let t2_value = ctx[6].caption + "";
-    let t2;
+    let t_value = ctx[6].caption + "";
+    let t;
     let mounted;
     let dispose;
     return {
       c() {
-        t0 = text(t0_value);
-        t1 = text(".");
         span = element("span");
-        t2 = text(t2_value);
+        t = text(t_value);
         attr(span, "class", "excerptheading clickable");
       },
       m(target, anchor) {
-        insert(target, t0, anchor);
-        insert(target, t1, anchor);
         insert(target, span, anchor);
-        append(span, t2);
+        append(span, t);
         if (!mounted) {
-          dispose = listen(span, "click", ctx[17]);
+          dispose = listen(span, "click", ctx[14]);
           mounted = true;
         }
       },
       p(ctx2, dirty) {
-        if (dirty & 64 && t0_value !== (t0_value = ctx2[6].id + ""))
-          set_data(t0, t0_value);
-        if (dirty & 64 && t2_value !== (t2_value = ctx2[6].caption + ""))
-          set_data(t2, t2_value);
+        if (dirty & 64 && t_value !== (t_value = ctx2[6].caption + ""))
+          set_data(t, t_value);
       },
       d(detaching) {
-        if (detaching)
-          detach(t0);
-        if (detaching)
-          detach(t1);
         if (detaching)
           detach(span);
         mounted = false;
@@ -17526,148 +17671,142 @@
       }
     };
   }
-  function create_fragment32(ctx) {
+  function create_fragment33(ctx) {
     let div;
-    let span0;
-    let t0_value = ctx[1].humanName(true) + "";
     let t0;
-    let span0_title_value;
     let t1;
     let t2;
     let t3;
     let t4;
-    let t5;
-    let span1;
-    let t6_value = ctx[0] + 1 + "";
-    let t6;
-    let t7;
-    let span2;
-    let t8;
-    let mounted;
-    let dispose;
-    let if_block0 = ctx[3] && create_if_block_33(ctx);
-    let if_block1 = ctx[2] && create_if_block_24(ctx);
-    let if_block2 = ctx[5] && create_if_block_111(ctx);
-    let if_block3 = ctx[6] && create_if_block24(ctx);
+    let paging;
+    let updating_from;
+    let current;
+    let if_block0 = pitakas.length > 1 && create_if_block_42(ctx);
+    let if_block1 = ctx[3] && create_if_block_33(ctx);
+    let if_block2 = ctx[2] && create_if_block_24(ctx);
+    let if_block3 = ctx[5] && create_if_block_111(ctx);
+    let if_block4 = ctx[6] && create_if_block25(ctx);
+    function paging_from_binding(value) {
+      ctx[15](value);
+    }
+    let paging_props = { last: ctx[4] };
+    if (ctx[0] !== void 0) {
+      paging_props.from = ctx[0];
+    }
+    paging = new paging_default({ props: paging_props });
+    binding_callbacks.push(() => bind(paging, "from", paging_from_binding));
     return {
       c() {
         div = element("div");
-        span0 = element("span");
-        t0 = text(t0_value);
-        t1 = space();
         if (if_block0)
           if_block0.c();
-        t2 = space();
+        t0 = space();
         if (if_block1)
           if_block1.c();
-        t3 = space();
+        t1 = space();
         if (if_block2)
           if_block2.c();
-        t4 = space();
+        t2 = space();
         if (if_block3)
           if_block3.c();
-        t5 = space();
-        span1 = element("span");
-        t6 = text(t6_value);
-        t7 = text("/");
-        span2 = element("span");
-        t8 = text(ctx[4]);
-        attr(span0, "title", span0_title_value = ctx[1].humanName());
-        attr(span1, "class", "clickable");
-        attr(span2, "class", "clickable");
+        t3 = space();
+        if (if_block4)
+          if_block4.c();
+        t4 = space();
+        create_component(paging.$$.fragment);
         attr(div, "class", "toolbar excerptheader");
       },
       m(target, anchor) {
         insert(target, div, anchor);
-        append(div, span0);
-        append(span0, t0);
-        append(div, t1);
         if (if_block0)
           if_block0.m(div, null);
-        append(div, t2);
+        append(div, t0);
         if (if_block1)
           if_block1.m(div, null);
-        append(div, t3);
+        append(div, t1);
         if (if_block2)
           if_block2.m(div, null);
-        append(div, t4);
+        append(div, t2);
         if (if_block3)
           if_block3.m(div, null);
-        append(div, t5);
-        append(div, span1);
-        append(span1, t6);
-        append(span1, t7);
-        append(div, span2);
-        append(span2, t8);
-        if (!mounted) {
-          dispose = [
-            listen(span1, "click", ctx[8]),
-            listen(span2, "click", ctx[7])
-          ];
-          mounted = true;
-        }
+        append(div, t3);
+        if (if_block4)
+          if_block4.m(div, null);
+        append(div, t4);
+        mount_component(paging, div, null);
+        current = true;
       },
       p(ctx2, [dirty]) {
-        if (dirty & 2 && t0_value !== (t0_value = ctx2[1].humanName(true) + ""))
-          set_data(t0, t0_value);
-        if (dirty & 2 && span0_title_value !== (span0_title_value = ctx2[1].humanName())) {
-          attr(span0, "title", span0_title_value);
-        }
+        if (pitakas.length > 1)
+          if_block0.p(ctx2, dirty);
         if (ctx2[3]) {
-          if (if_block0) {
-            if_block0.p(ctx2, dirty);
-          } else {
-            if_block0 = create_if_block_33(ctx2);
-            if_block0.c();
-            if_block0.m(div, t2);
-          }
-        } else if (if_block0) {
-          if_block0.d(1);
-          if_block0 = null;
-        }
-        if (ctx2[2]) {
           if (if_block1) {
             if_block1.p(ctx2, dirty);
           } else {
-            if_block1 = create_if_block_24(ctx2);
+            if_block1 = create_if_block_33(ctx2);
             if_block1.c();
-            if_block1.m(div, t3);
+            if_block1.m(div, t1);
           }
         } else if (if_block1) {
           if_block1.d(1);
           if_block1 = null;
         }
-        if (ctx2[5]) {
+        if (ctx2[2]) {
           if (if_block2) {
             if_block2.p(ctx2, dirty);
           } else {
-            if_block2 = create_if_block_111(ctx2);
+            if_block2 = create_if_block_24(ctx2);
             if_block2.c();
-            if_block2.m(div, t4);
+            if_block2.m(div, t2);
           }
         } else if (if_block2) {
           if_block2.d(1);
           if_block2 = null;
         }
-        if (ctx2[6]) {
+        if (ctx2[5]) {
           if (if_block3) {
             if_block3.p(ctx2, dirty);
           } else {
-            if_block3 = create_if_block24(ctx2);
+            if_block3 = create_if_block_111(ctx2);
             if_block3.c();
-            if_block3.m(div, t5);
+            if_block3.m(div, t3);
           }
         } else if (if_block3) {
           if_block3.d(1);
           if_block3 = null;
         }
-        if (dirty & 1 && t6_value !== (t6_value = ctx2[0] + 1 + ""))
-          set_data(t6, t6_value);
+        if (ctx2[6]) {
+          if (if_block4) {
+            if_block4.p(ctx2, dirty);
+          } else {
+            if_block4 = create_if_block25(ctx2);
+            if_block4.c();
+            if_block4.m(div, t4);
+          }
+        } else if (if_block4) {
+          if_block4.d(1);
+          if_block4 = null;
+        }
+        const paging_changes = {};
         if (dirty & 16)
-          set_data(t8, ctx2[4]);
+          paging_changes.last = ctx2[4];
+        if (!updating_from && dirty & 1) {
+          updating_from = true;
+          paging_changes.from = ctx2[0];
+          add_flush_callback(() => updating_from = false);
+        }
+        paging.$set(paging_changes);
       },
-      i: noop,
-      o: noop,
+      i(local) {
+        if (current)
+          return;
+        transition_in(paging.$$.fragment, local);
+        current = true;
+      },
+      o(local) {
+        transition_out(paging.$$.fragment, local);
+        current = false;
+      },
       d(detaching) {
         if (detaching)
           detach(div);
@@ -17679,12 +17818,13 @@
           if_block2.d();
         if (if_block3)
           if_block3.d();
-        mounted = false;
-        run_all(dispose);
+        if (if_block4)
+          if_block4.d();
+        destroy_component(paging);
       }
     };
   }
-  function instance32($$self, $$props, $$invalidate) {
+  function instance33($$self, $$props, $$invalidate) {
     let { ptk } = $$props;
     let { name: name2 } = $$props;
     let { caption } = $$props;
@@ -17695,19 +17835,6 @@
     let { hitcount } = $$props;
     let { chunk } = $$props;
     const LV = getContext("LV");
-    let { pagesize = EXCERPT_PAGESIZE } = $$props;
-    const next = () => {
-      if (from + pagesize >= last)
-        return;
-      $$invalidate(0, from += pagesize);
-      if (from > last)
-        $$invalidate(0, from = last - 1);
-    };
-    const prev = () => {
-      $$invalidate(0, from -= pagesize);
-      if (from < 0)
-        $$invalidate(0, from = 0);
-    };
     const setTofind = () => {
       LV.setTofind(tofind2);
     };
@@ -17722,11 +17849,15 @@
     const click_handler = () => setTofind();
     const click_handler_1 = () => listChunk();
     const click_handler_2 = () => openChunk(chunk.bkid, chunk.tagname, chunk.id);
+    function paging_from_binding(value) {
+      from = value;
+      $$invalidate(0, from);
+    }
     $$self.$$set = ($$props2) => {
       if ("ptk" in $$props2)
         $$invalidate(1, ptk = $$props2.ptk);
       if ("name" in $$props2)
-        $$invalidate(12, name2 = $$props2.name);
+        $$invalidate(10, name2 = $$props2.name);
       if ("caption" in $$props2)
         $$invalidate(2, caption = $$props2.caption);
       if ("tofind" in $$props2)
@@ -17736,13 +17867,11 @@
       if ("last" in $$props2)
         $$invalidate(4, last = $$props2.last);
       if ("seq" in $$props2)
-        $$invalidate(13, seq = $$props2.seq);
+        $$invalidate(11, seq = $$props2.seq);
       if ("hitcount" in $$props2)
         $$invalidate(5, hitcount = $$props2.hitcount);
       if ("chunk" in $$props2)
         $$invalidate(6, chunk = $$props2.chunk);
-      if ("pagesize" in $$props2)
-        $$invalidate(14, pagesize = $$props2.pagesize);
     };
     return [
       from,
@@ -17752,40 +17881,37 @@
       last,
       hitcount,
       chunk,
-      next,
-      prev,
       setTofind,
       listChunk,
       openChunk,
       name2,
       seq,
-      pagesize,
       click_handler,
       click_handler_1,
-      click_handler_2
+      click_handler_2,
+      paging_from_binding
     ];
   }
   var Excerptbar = class extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance32, create_fragment32, safe_not_equal, {
+      init(this, options, instance33, create_fragment33, safe_not_equal, {
         ptk: 1,
-        name: 12,
+        name: 10,
         caption: 2,
         tofind: 3,
         from: 0,
         last: 4,
-        seq: 13,
+        seq: 11,
         hitcount: 5,
-        chunk: 6,
-        pagesize: 14
+        chunk: 6
       });
     }
   };
   var excerptbar_default = Excerptbar;
 
   // src/ownerdraw/excerptheading.svelte
-  function create_fragment33(ctx) {
+  function create_fragment34(ctx) {
     let span;
     let mounted;
     let dispose;
@@ -17812,7 +17938,7 @@
       }
     };
   }
-  function instance33($$self, $$props, $$invalidate) {
+  function instance34($$self, $$props, $$invalidate) {
     let { id } = $$props;
     let { bkid } = $$props;
     let { tagname } = $$props;
@@ -17844,7 +17970,7 @@
   var Excerptheading = class extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance33, create_fragment33, safe_not_equal, {
+      init(this, options, instance34, create_fragment34, safe_not_equal, {
         id: 1,
         bkid: 2,
         tagname: 3,
@@ -17863,9 +17989,9 @@
     child_ctx[24] = i;
     return child_ctx;
   }
-  function create_if_block25(ctx) {
+  function create_if_block26(ctx) {
     let span;
-    let t0_value = " " + ctx[22].ck.humanId;
+    let t0_value = " " + ctx[22].ck.caption;
     let t0;
     let t1;
     let mounted;
@@ -17891,7 +18017,7 @@
       },
       p(new_ctx, dirty) {
         ctx = new_ctx;
-        if (dirty & 256 && t0_value !== (t0_value = " " + ctx[22].ck.humanId))
+        if (dirty & 256 && t0_value !== (t0_value = " " + ctx[22].ck.caption))
           set_data(t0, t0_value);
       },
       d(detaching) {
@@ -17922,7 +18048,7 @@
       abridge_props = assign(abridge_props, abridge_spread_levels[i]);
     }
     abridge = new abridge_default({ props: abridge_props });
-    let if_block = !ctx[7] && create_if_block25(ctx);
+    let if_block = !ctx[7] && create_if_block26(ctx);
     return {
       c() {
         div = element("div");
@@ -17957,7 +18083,7 @@
           if (if_block) {
             if_block.p(ctx2, dirty);
           } else {
-            if_block = create_if_block25(ctx2);
+            if_block = create_if_block26(ctx2);
             if_block.c();
             if_block.m(div, null);
           }
@@ -17988,7 +18114,7 @@
       }
     };
   }
-  function create_fragment34(ctx) {
+  function create_fragment35(ctx) {
     let excerptbar;
     let updating_from;
     let t;
@@ -18108,7 +18234,7 @@
       }
     };
   }
-  function instance34($$self, $$props, $$invalidate) {
+  function instance35($$self, $$props, $$invalidate) {
     let displayitems;
     let chunk;
     let { caption } = $$props;
@@ -18226,7 +18352,7 @@
   var Excerpt = class extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance34, create_fragment34, safe_not_equal, {
+      init(this, options, instance35, create_fragment35, safe_not_equal, {
         caption: 1,
         action: 2,
         name: 10,
@@ -18335,7 +18461,7 @@
       }
     };
   }
-  function create_if_block26(ctx) {
+  function create_if_block27(ctx) {
     let span;
     let t0;
     let t1_value = ctx[2].length - ctx[7] + "";
@@ -18370,7 +18496,7 @@
       }
     };
   }
-  function create_fragment35(ctx) {
+  function create_fragment36(ctx) {
     let t;
     let if_block_anchor;
     let current;
@@ -18382,7 +18508,7 @@
     const out = (i) => transition_out(each_blocks[i], 1, 1, () => {
       each_blocks[i] = null;
     });
-    let if_block = ctx[7] < ctx[2].length && create_if_block26(ctx);
+    let if_block = ctx[7] < ctx[2].length && create_if_block27(ctx);
     return {
       c() {
         for (let i = 0; i < each_blocks.length; i += 1) {
@@ -18429,7 +18555,7 @@
           if (if_block) {
             if_block.p(ctx2, dirty);
           } else {
-            if_block = create_if_block26(ctx2);
+            if_block = create_if_block27(ctx2);
             if_block.c();
             if_block.m(if_block_anchor.parentNode, if_block_anchor);
           }
@@ -18465,7 +18591,7 @@
     };
   }
   var ITEMPERPAGE3 = 10;
-  function instance35($$self, $$props, $$invalidate) {
+  function instance36($$self, $$props, $$invalidate) {
     let showcount;
     let displayitems;
     const LV = getContext("LV");
@@ -18554,7 +18680,7 @@
   var Bmeresult = class extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance35, create_fragment35, safe_not_equal, {
+      init(this, options, instance36, create_fragment36, safe_not_equal, {
         ptk: 0,
         seq: 1,
         items: 2,
@@ -18569,7 +18695,7 @@
   var bmeresult_default = Bmeresult;
 
   // src/ownerdraw/queryresult.svelte
-  function create_fragment36(ctx) {
+  function create_fragment37(ctx) {
     let t0_value = ctx[5].name + "";
     let t0;
     let span;
@@ -18667,7 +18793,7 @@
       }
     };
   }
-  function instance36($$self, $$props, $$invalidate) {
+  function instance37($$self, $$props, $$invalidate) {
     let { caption } = $$props;
     let { tofind: tofind2 } = $$props;
     let { name: name2 } = $$props;
@@ -18705,7 +18831,7 @@
   var Queryresult = class extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance36, create_fragment36, safe_not_equal, {
+      init(this, options, instance37, create_fragment37, safe_not_equal, {
         caption: 0,
         tofind: 1,
         name: 2,
@@ -18728,7 +18854,7 @@
     child_ctx[20] = i;
     return child_ctx;
   }
-  function create_if_block27(ctx) {
+  function create_if_block28(ctx) {
     let span;
     let t_value = "\u3000" + ctx[18].count;
     let t;
@@ -18766,39 +18892,32 @@
   }
   function create_each_block18(ctx) {
     let div;
-    let t0_value = ctx[18].id + "";
-    let t0;
-    let t1;
     let span;
-    let t2_value = _(ctx[18].title, ctx[5]?.lang) + "";
-    let t2;
+    let t0_value = _(ctx[18].caption, ctx[5]?.lang) + "";
+    let t0;
     let span_class_value;
-    let t3;
+    let t1;
     let mounted;
     let dispose;
     function click_handler() {
       return ctx[13](ctx[18]);
     }
-    let if_block = ctx[18].count >= 0 && create_if_block27(ctx);
+    let if_block = ctx[18].count >= 0 && create_if_block28(ctx);
     return {
       c() {
         div = element("div");
-        t0 = text(t0_value);
-        t1 = text(".");
         span = element("span");
-        t2 = text(t2_value);
-        t3 = space();
+        t0 = text(t0_value);
+        t1 = space();
         if (if_block)
           if_block.c();
         attr(span, "class", span_class_value = "clickable " + textClasses(ctx[5]));
       },
       m(target, anchor) {
         insert(target, div, anchor);
-        append(div, t0);
-        append(div, t1);
         append(div, span);
-        append(span, t2);
-        append(div, t3);
+        append(span, t0);
+        append(div, t1);
         if (if_block)
           if_block.m(div, null);
         if (!mounted) {
@@ -18808,10 +18927,8 @@
       },
       p(new_ctx, dirty) {
         ctx = new_ctx;
-        if (dirty & 16 && t0_value !== (t0_value = ctx[18].id + ""))
+        if (dirty & 48 && t0_value !== (t0_value = _(ctx[18].caption, ctx[5]?.lang) + ""))
           set_data(t0, t0_value);
-        if (dirty & 48 && t2_value !== (t2_value = _(ctx[18].title, ctx[5]?.lang) + ""))
-          set_data(t2, t2_value);
         if (dirty & 32 && span_class_value !== (span_class_value = "clickable " + textClasses(ctx[5]))) {
           attr(span, "class", span_class_value);
         }
@@ -18819,7 +18936,7 @@
           if (if_block) {
             if_block.p(ctx, dirty);
           } else {
-            if_block = create_if_block27(ctx);
+            if_block = create_if_block28(ctx);
             if_block.c();
             if_block.m(div, null);
           }
@@ -18838,7 +18955,7 @@
       }
     };
   }
-  function create_fragment37(ctx) {
+  function create_fragment38(ctx) {
     let excerptbar;
     let updating_from;
     let t;
@@ -18942,7 +19059,7 @@
       }
     };
   }
-  function instance37($$self, $$props, $$invalidate) {
+  function instance38($$self, $$props, $$invalidate) {
     let { caption } = $$props;
     let { name: name2 } = $$props;
     let { tofind: tofind2 } = $$props;
@@ -19027,7 +19144,7 @@
   var Titlecount = class extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance37, create_fragment37, safe_not_equal, {
+      init(this, options, instance38, create_fragment38, safe_not_equal, {
         caption: 1,
         name: 2,
         tofind: 3,
@@ -19044,7 +19161,7 @@
   var titlecount_default = Titlecount;
 
   // src/ownerdraw/systeminfo.svelte
-  function create_fragment38(ctx) {
+  function create_fragment39(ctx) {
     let t;
     return {
       c() {
@@ -19065,13 +19182,13 @@
   var Systeminfo = class extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, null, create_fragment38, safe_not_equal, {});
+      init(this, options, null, create_fragment39, safe_not_equal, {});
     }
   };
   var systeminfo_default = Systeminfo;
 
   // src/comps/statebutton.svelte
-  function create_fragment39(ctx) {
+  function create_fragment40(ctx) {
     let span1;
     let span0;
     let raw_value = ctx[4](ctx[1], ctx[0]) + "";
@@ -19119,7 +19236,7 @@
       }
     };
   }
-  function instance38($$self, $$props, $$invalidate) {
+  function instance39($$self, $$props, $$invalidate) {
     let { onclick = null } = $$props;
     let { disabled = false } = $$props;
     let { title = "" } = $$props;
@@ -19216,7 +19333,7 @@
   var Statebutton = class extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance38, create_fragment39, safe_not_equal, {
+      init(this, options, instance39, create_fragment40, safe_not_equal, {
         onclick: 6,
         disabled: 2,
         title: 3,
@@ -19438,7 +19555,7 @@
       }
     };
   }
-  function create_fragment40(ctx) {
+  function create_fragment41(ctx) {
     let each_1_anchor;
     let current;
     let each_value = ctx[0];
@@ -19508,7 +19625,7 @@
       }
     };
   }
-  function instance39($$self, $$props, $$invalidate) {
+  function instance40($$self, $$props, $$invalidate) {
     let $pitakas;
     component_subscribe($$self, pitakas, ($$value) => $$invalidate(0, $pitakas = $$value));
     return [$pitakas];
@@ -19516,13 +19633,13 @@
   var Versioninfo = class extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance39, create_fragment40, safe_not_equal, {});
+      init(this, options, instance40, create_fragment41, safe_not_equal, {});
     }
   };
   var versioninfo_default = Versioninfo;
 
   // src/ownerdraw/setting.svelte
-  function create_if_block28(ctx) {
+  function create_if_block29(ctx) {
     let t0_value = _("Pali:") + "";
     let t0;
     let t1;
@@ -19576,7 +19693,7 @@
       }
     };
   }
-  function create_fragment41(ctx) {
+  function create_fragment42(ctx) {
     let statebtn0;
     let t0;
     let statebtn1;
@@ -19608,7 +19725,7 @@
         storeid: tosim
       }
     });
-    let if_block = show_if && create_if_block28(ctx);
+    let if_block = show_if && create_if_block29(ctx);
     versioninfo = new versioninfo_default({});
     return {
       c() {
@@ -19692,13 +19809,13 @@
   var Setting = class extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, null, create_fragment41, safe_not_equal, {});
+      init(this, options, null, create_fragment42, safe_not_equal, {});
     }
   };
   var setting_default = Setting;
 
   // src/ownerdraw/unknown.svelte
-  function create_fragment42(ctx) {
+  function create_fragment43(ctx) {
     let t;
     return {
       c() {
@@ -19719,7 +19836,7 @@
   var Unknown = class extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, null, create_fragment42, safe_not_equal, {});
+      init(this, options, null, create_fragment43, safe_not_equal, {});
     }
   };
   var unknown_default = Unknown;
@@ -19854,7 +19971,7 @@
       }
     };
   }
-  function create_fragment43(ctx) {
+  function create_fragment44(ctx) {
     let previous_key = ctx[2];
     let key_block_anchor;
     let current;
@@ -19899,7 +20016,7 @@
       }
     };
   }
-  function instance40($$self, $$props, $$invalidate) {
+  function instance41($$self, $$props, $$invalidate) {
     let { items = [] } = $$props;
     let { choices = [] } = $$props;
     let { unselectable = false } = $$props;
@@ -19935,7 +20052,7 @@
   var Statebuttons = class extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance40, create_fragment43, safe_not_equal, {
+      init(this, options, instance41, create_fragment44, safe_not_equal, {
         items: 0,
         choices: 5,
         unselectable: 1,
@@ -19946,7 +20063,7 @@
   var statebuttons_default = Statebuttons;
 
   // src/comps/groupstatlink.svelte
-  function create_fragment44(ctx) {
+  function create_fragment45(ctx) {
     let span1;
     let t0_value = " " + ctx[0];
     let t0;
@@ -19989,7 +20106,7 @@
       }
     };
   }
-  function instance41($$self, $$props, $$invalidate) {
+  function instance42($$self, $$props, $$invalidate) {
     let { caption } = $$props;
     let { count } = $$props;
     let { idx: idx2 } = $$props;
@@ -20010,7 +20127,7 @@
   var Groupstatlink = class extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance41, create_fragment44, safe_not_equal, { caption: 0, count: 1, idx: 2, onclick: 3 });
+      init(this, options, instance42, create_fragment45, safe_not_equal, { caption: 0, count: 1, idx: 2, onclick: 3 });
     }
   };
   var groupstatlink_default = Groupstatlink;
@@ -20151,7 +20268,7 @@
       }
     };
   }
-  function create_if_block29(ctx) {
+  function create_if_block30(ctx) {
     let span;
     let t0_value = ctx[6].length + "";
     let t0;
@@ -20260,7 +20377,7 @@
     let if_block;
     let if_block_anchor;
     let current;
-    const if_block_creators = [create_if_block29, create_if_block_112];
+    const if_block_creators = [create_if_block30, create_if_block_112];
     const if_blocks = [];
     function select_block_type(ctx2, dirty) {
       if (ctx2[6].length)
@@ -20344,7 +20461,7 @@
       }
     };
   }
-  function create_fragment45(ctx) {
+  function create_fragment46(ctx) {
     let t;
     let previous_key = ctx[6];
     let key_block_anchor;
@@ -20437,7 +20554,7 @@
       }
     };
   }
-  function instance42($$self, $$props, $$invalidate) {
+  function instance43($$self, $$props, $$invalidate) {
     let groups;
     let items;
     let { ptk, seq } = $$props;
@@ -20535,7 +20652,7 @@
   var Guidefilter = class extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance42, create_fragment45, safe_not_equal, { ptk: 0, seq: 12 });
+      init(this, options, instance43, create_fragment46, safe_not_equal, { ptk: 0, seq: 12 });
     }
   };
   var guidefilter_default = Guidefilter;
@@ -20727,7 +20844,7 @@
       }
     };
   }
-  function create_if_block30(ctx) {
+  function create_if_block31(ctx) {
     let guidefilter;
     let current;
     guidefilter = new guidefilter_default({
@@ -20992,12 +21109,12 @@
       }
     };
   }
-  function create_fragment46(ctx) {
+  function create_fragment47(ctx) {
     let current_block_type_index;
     let if_block;
     let if_block_anchor;
     let current;
-    const if_block_creators = [create_if_block30, create_if_block_113];
+    const if_block_creators = [create_if_block31, create_if_block_113];
     const if_blocks = [];
     function select_block_type(ctx2, dirty) {
       if (!ctx2[1])
@@ -21071,7 +21188,7 @@
       }
     };
   }
-  function instance43($$self, $$props, $$invalidate) {
+  function instance44($$self, $$props, $$invalidate) {
     let { ptk, action, items = [], seq } = $$props;
     const LV = getContext("LV");
     let from = 0, ready = false, now = {};
@@ -21144,130 +21261,10 @@
   var Guide = class extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance43, create_fragment46, safe_not_equal, { ptk: 0, action: 1, items: 2, seq: 3 });
+      init(this, options, instance44, create_fragment47, safe_not_equal, { ptk: 0, action: 1, items: 2, seq: 3 });
     }
   };
   var guide_default = Guide;
-
-  // src/comps/paging.svelte
-  function create_if_block31(ctx) {
-    let span0;
-    let t0_value = ctx[0] + 1 + "";
-    let t0;
-    let t1;
-    let span1;
-    let t2_value = ctx[1].length + "";
-    let t2;
-    let mounted;
-    let dispose;
-    return {
-      c() {
-        span0 = element("span");
-        t0 = text(t0_value);
-        t1 = text("/");
-        span1 = element("span");
-        t2 = text(t2_value);
-        attr(span0, "class", "clickable pagingbutton");
-        attr(span1, "class", "clickable pagingbutton");
-      },
-      m(target, anchor) {
-        insert(target, span0, anchor);
-        append(span0, t0);
-        append(span0, t1);
-        insert(target, span1, anchor);
-        append(span1, t2);
-        if (!mounted) {
-          dispose = [
-            listen(span0, "click", ctx[4]),
-            listen(span1, "click", ctx[5])
-          ];
-          mounted = true;
-        }
-      },
-      p(ctx2, dirty) {
-        if (dirty & 1 && t0_value !== (t0_value = ctx2[0] + 1 + ""))
-          set_data(t0, t0_value);
-        if (dirty & 2 && t2_value !== (t2_value = ctx2[1].length + ""))
-          set_data(t2, t2_value);
-      },
-      d(detaching) {
-        if (detaching)
-          detach(span0);
-        if (detaching)
-          detach(span1);
-        mounted = false;
-        run_all(dispose);
-      }
-    };
-  }
-  function create_fragment47(ctx) {
-    let if_block_anchor;
-    let if_block = ctx[1].length > PAGESIZE && create_if_block31(ctx);
-    return {
-      c() {
-        if (if_block)
-          if_block.c();
-        if_block_anchor = empty();
-      },
-      m(target, anchor) {
-        if (if_block)
-          if_block.m(target, anchor);
-        insert(target, if_block_anchor, anchor);
-      },
-      p(ctx2, [dirty]) {
-        if (ctx2[1].length > PAGESIZE) {
-          if (if_block) {
-            if_block.p(ctx2, dirty);
-          } else {
-            if_block = create_if_block31(ctx2);
-            if_block.c();
-            if_block.m(if_block_anchor.parentNode, if_block_anchor);
-          }
-        } else if (if_block) {
-          if_block.d(1);
-          if_block = null;
-        }
-      },
-      i: noop,
-      o: noop,
-      d(detaching) {
-        if (if_block)
-          if_block.d(detaching);
-        if (detaching)
-          detach(if_block_anchor);
-      }
-    };
-  }
-  var PAGESIZE = 5;
-  function instance44($$self, $$props, $$invalidate) {
-    let { from } = $$props;
-    let { items } = $$props;
-    const prev = () => {
-      $$invalidate(0, from -= PAGESIZE);
-      if (from < 0)
-        $$invalidate(0, from = 0);
-    };
-    const next = () => {
-      if (from + 5 < items.length)
-        $$invalidate(0, from += PAGESIZE);
-    };
-    const click_handler = () => prev();
-    const click_handler_1 = () => next();
-    $$self.$$set = ($$props2) => {
-      if ("from" in $$props2)
-        $$invalidate(0, from = $$props2.from);
-      if ("items" in $$props2)
-        $$invalidate(1, items = $$props2.items);
-    };
-    return [from, items, prev, next, click_handler, click_handler_1];
-  }
-  var Paging = class extends SvelteComponent {
-    constructor(options) {
-      super();
-      init(this, options, instance44, create_fragment47, safe_not_equal, { from: 0, items: 1 });
-    }
-  };
-  var paging_default = Paging;
 
   // src/ownerdraw/approx.svelte
   function get_each_context23(ctx, list, i) {
@@ -21381,7 +21378,7 @@
     function paging_from_binding(value) {
       ctx[9](value);
     }
-    let paging_props = { items: ctx[3] };
+    let paging_props = { last: ctx[3].length };
     if (ctx[0] !== void 0) {
       paging_props.from = ctx[0];
     }
@@ -21437,7 +21434,7 @@
         }
         const paging_changes = {};
         if (dirty & 8)
-          paging_changes.items = ctx2[3];
+          paging_changes.last = ctx2[3].length;
         if (!updating_from && dirty & 1) {
           updating_from = true;
           paging_changes.from = ctx2[0];
