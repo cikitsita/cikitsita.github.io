@@ -1,4 +1,4 @@
-jsonp(13,{"name":"cm","start":27746},`^ck31z09h239
+jsonp(13,{"name":"cm","start":27748},`^ck31z09h239
 ^norm 宗氣阻塞。
 ^chinese 胸痺心痛，心慌心悸。
 ^western 竇性心律不齊，心絞痛，慢性肫襄炎。

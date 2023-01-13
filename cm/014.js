@@ -1,4 +1,4 @@
-jsonp(14,{"name":"cm","start":30145},`^origin〔李聰市方〕
+jsonp(14,{"name":"cm","start":30147},`^origin〔李聰市方〕
 ^formula3<var=2>〔半垔白木天麻湯證〕
 ^origin〔李志文方〕
 ^ingredients2790 半S、天麻、鉤籐、赭石、陳皮、澤瀉 各15g，白朮、車前子 各20g，茯苓25g，甘草、俚蠶、砂仁各l.Og。

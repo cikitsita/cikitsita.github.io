@@ -1,4 +1,4 @@
-jsonp(11,{"name":"cm","start":22720},`^norm 肝氣失疏。-
+jsonp(11,{"name":"cm","start":22722},`^norm 肝氣失疏。-
 ^chinese 癃閉。
 ^combo 氣化+氣滯+絡鬰
 ^ill〔氣化不行〕

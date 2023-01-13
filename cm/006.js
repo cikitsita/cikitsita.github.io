@@ -1,4 +1,4 @@
-jsonp(6,{"name":"cm","start":9903},`^ck12z12h060
+jsonp(6,{"name":"cm","start":9905},`^ck12z12h060
 ^norm 濕遏熱蒸，穢濕閉阻。
 ^chinese 春溫夾濕，冬溫伏濕，濕溫，低熱。
 ^western 腎盂腎炎。

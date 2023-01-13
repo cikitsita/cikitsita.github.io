@@ -1,4 +1,4 @@
-jsonp(7,{"name":"cm","start":12440},`^western 乳糜屎，前列腺肥大，腎結石，輸尿管結石，膀胱憩室。
+jsonp(7,{"name":"cm","start":12442},`^western 乳糜屎，前列腺肥大，腎結石，輸尿管結石，膀胱憩室。
 ^combo 陰虛+氣滯+津部+絡滯 ，
 ^formulas
 ^formula1〔滋腎通關丸證〕

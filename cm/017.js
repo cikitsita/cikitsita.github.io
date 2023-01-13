@@ -1,4 +1,4 @@
-jsonp(17,{"name":"cm","start":37701},`^formula2〔加減五陰煎證〕
+jsonp(17,{"name":"cm","start":37703},`^formula2〔加減五陰煎證〕
 ^origin〔葉孝禮方〕
 ^ingredients3501 熟地9g，淮山、太子參 各15g，扁豆、茯苓、杭芍、烏梅、蓮子各IOg，白朮6g，炙甘草3g。
 ^formula3〔滋養脾陰方〕

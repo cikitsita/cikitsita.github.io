@@ -1,4 +1,4 @@
-jsonp(15,{"name":"cm","start":32790},`^pulse 脈細滑。
+jsonp(15,{"name":"cm","start":32792},`^pulse 脈細滑。
 ^ill<sub=1>〔氣機不降〕
 ^symtom ①咳嗽氣逆，咳嗆哮吼，②喘滿，氣促，喘不得臥。
 ^ill2〔絡瘀血溢〕

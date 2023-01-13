@@ -1,4 +1,4 @@
-jsonp(3,{"name":"cm","start":2481},`^tounge 舌苔黃燥有朱點。‧
+jsonp(3,{"name":"cm","start":2483},`^tounge 舌苔黃燥有朱點。‧
 ^formulas
 ^formula1〔舒筋通絡湯證〕
 ^origin〔笛少逸方〕

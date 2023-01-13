@@ -377,7 +377,7 @@
     }
     component.$$.dirty[i / 31 | 0] |= 1 << i % 31;
   }
-  function init(component, options, instance46, create_fragment49, not_equal, props, append_styles, dirty = [-1]) {
+  function init(component, options, instance47, create_fragment50, not_equal, props, append_styles, dirty = [-1]) {
     const parent_component = current_component;
     set_current_component(component);
     const $$ = component.$$ = {
@@ -400,7 +400,7 @@
     };
     append_styles && append_styles($$.root);
     let ready = false;
-    $$.ctx = instance46 ? instance46(component, options.props || {}, (i, ret, ...rest) => {
+    $$.ctx = instance47 ? instance47(component, options.props || {}, (i, ret, ...rest) => {
       const value = rest.length ? rest[0] : ret;
       if ($$.ctx && not_equal($$.ctx[i], $$.ctx[i] = value)) {
         if (!$$.skip_bound && $$.bound[i])
@@ -413,7 +413,7 @@
     $$.update();
     ready = true;
     run_all($$.before_update);
-    $$.fragment = create_fragment49 ? create_fragment49($$.ctx) : false;
+    $$.fragment = create_fragment50 ? create_fragment50($$.ctx) : false;
     if (options.target) {
       if (options.hydrate) {
         start_hydrating();
@@ -4509,7 +4509,8 @@
     let phit = 0, pextra = 0;
     for (let i = 0; i < ot.tags.length; i++) {
       const tag = ot.tags[i];
-      for (let j2 = tag.choff; j2 <= tag.choff + tag.width; j2++) {
+      const width = tag.width ? tag.width : 1;
+      for (let j2 = tag.choff; j2 < tag.choff + width; j2++) {
         if (!tagsAt[j2])
           tagsAt[j2] = [];
         tagsAt[j2].push(i);
@@ -4525,7 +4526,7 @@
         }
       }
       if (hits && hits.length && phit < hits.length) {
-        if (ru.postingoffset >= hits[phit] && ru.postingoffset < hits[phit] + phraselength[phit] && ru.token.type >= 16 /* SEARCHABLE */) {
+        if (ru.postingoffset >= hits[phit] && ru.postingoffset <= hits[phit] + phraselength[phit] && ru.token.type >= 16 /* SEARCHABLE */) {
           ru.highlight = true;
         }
         if (hits[phit] < ru.postingoffset)
@@ -6828,15 +6829,14 @@
       const items = this.getApprox(ptk, tagname, id);
       const similarity = items.map((it) => it.similarity);
       let lines = items.map((it) => it.line);
-      let till = this.till;
-      let from = this.from;
+      let till = this.till || items.length;
+      let from = this.from || 0;
       if (till == -1)
-        till = this.from + ACTIONPAGESIZE;
+        till = from + ACTIONPAGESIZE;
       this.first = 0;
       this.last = lines.length;
       if (till >= lines.length)
         till = lines.length;
-      lines = lines.slice(from, till);
       this.ownerdraw = { painter: "approx", data: {
         last: this.last,
         samechunkline,
@@ -8207,6 +8207,7 @@
   });
   var getVerTexts = async (ptk) => {
     const linepos = ptk.defines.ver?.linepos;
+    await ptk.loadLines(linepos);
     const verTexts = linepos ? linepos.map((it) => ptk.getLine(it)) : [];
     return verTexts;
   };
@@ -15755,7 +15756,7 @@
     let if_block0_anchor;
     let if_block1_anchor;
     let current;
-    let if_block0 = ctx[9] && create_if_block_17(ctx);
+    let if_block0 = ctx[9] && ctx[5] && create_if_block_17(ctx);
     let if_block1 = ctx[10] == ctx[7] && create_if_block18(ctx);
     return {
       c() {
@@ -15776,7 +15777,7 @@
         current = true;
       },
       p(ctx2, [dirty]) {
-        if (ctx2[9]) {
+        if (ctx2[9] && ctx2[5]) {
           if (if_block0) {
             if_block0.p(ctx2, dirty);
           } else {
@@ -19258,6 +19259,7 @@
         div = element("div");
         create_component(inlinetext.$$.fragment);
         t = space();
+        attr(div, "class", "ver");
       },
       m(target, anchor) {
         insert(target, div, anchor);
@@ -21147,13 +21149,133 @@
   };
   var guide_default = Guide;
 
+  // src/comps/paging.svelte
+  function create_if_block31(ctx) {
+    let span0;
+    let t0_value = ctx[0] + 1 + "";
+    let t0;
+    let t1;
+    let span1;
+    let t2_value = ctx[1].length + "";
+    let t2;
+    let mounted;
+    let dispose;
+    return {
+      c() {
+        span0 = element("span");
+        t0 = text(t0_value);
+        t1 = text("/");
+        span1 = element("span");
+        t2 = text(t2_value);
+        attr(span0, "class", "clickable pagingbutton");
+        attr(span1, "class", "clickable pagingbutton");
+      },
+      m(target, anchor) {
+        insert(target, span0, anchor);
+        append(span0, t0);
+        append(span0, t1);
+        insert(target, span1, anchor);
+        append(span1, t2);
+        if (!mounted) {
+          dispose = [
+            listen(span0, "click", ctx[4]),
+            listen(span1, "click", ctx[5])
+          ];
+          mounted = true;
+        }
+      },
+      p(ctx2, dirty) {
+        if (dirty & 1 && t0_value !== (t0_value = ctx2[0] + 1 + ""))
+          set_data(t0, t0_value);
+        if (dirty & 2 && t2_value !== (t2_value = ctx2[1].length + ""))
+          set_data(t2, t2_value);
+      },
+      d(detaching) {
+        if (detaching)
+          detach(span0);
+        if (detaching)
+          detach(span1);
+        mounted = false;
+        run_all(dispose);
+      }
+    };
+  }
+  function create_fragment47(ctx) {
+    let if_block_anchor;
+    let if_block = ctx[1].length > PAGESIZE && create_if_block31(ctx);
+    return {
+      c() {
+        if (if_block)
+          if_block.c();
+        if_block_anchor = empty();
+      },
+      m(target, anchor) {
+        if (if_block)
+          if_block.m(target, anchor);
+        insert(target, if_block_anchor, anchor);
+      },
+      p(ctx2, [dirty]) {
+        if (ctx2[1].length > PAGESIZE) {
+          if (if_block) {
+            if_block.p(ctx2, dirty);
+          } else {
+            if_block = create_if_block31(ctx2);
+            if_block.c();
+            if_block.m(if_block_anchor.parentNode, if_block_anchor);
+          }
+        } else if (if_block) {
+          if_block.d(1);
+          if_block = null;
+        }
+      },
+      i: noop,
+      o: noop,
+      d(detaching) {
+        if (if_block)
+          if_block.d(detaching);
+        if (detaching)
+          detach(if_block_anchor);
+      }
+    };
+  }
+  var PAGESIZE = 5;
+  function instance44($$self, $$props, $$invalidate) {
+    let { from } = $$props;
+    let { items } = $$props;
+    const prev = () => {
+      $$invalidate(0, from -= PAGESIZE);
+      if (from < 0)
+        $$invalidate(0, from = 0);
+    };
+    const next = () => {
+      if (from + 5 < items.length)
+        $$invalidate(0, from += PAGESIZE);
+    };
+    const click_handler = () => prev();
+    const click_handler_1 = () => next();
+    $$self.$$set = ($$props2) => {
+      if ("from" in $$props2)
+        $$invalidate(0, from = $$props2.from);
+      if ("items" in $$props2)
+        $$invalidate(1, items = $$props2.items);
+    };
+    return [from, items, prev, next, click_handler, click_handler_1];
+  }
+  var Paging = class extends SvelteComponent {
+    constructor(options) {
+      super();
+      init(this, options, instance44, create_fragment47, safe_not_equal, { from: 0, items: 1 });
+    }
+  };
+  var paging_default = Paging;
+
   // src/ownerdraw/approx.svelte
   function get_each_context23(ctx, list, i) {
     const child_ctx = ctx.slice();
-    child_ctx[13] = list[i];
+    child_ctx[14] = list[i];
     return child_ctx;
   }
-  function create_if_block31(ctx) {
+  function create_if_block32(ctx) {
     let t;
     return {
       c() {
@@ -21172,12 +21294,12 @@
     let div;
     let excerptheading;
     let t0;
-    let t1_value = Math.floor(ctx[13].similarity * 100) + "%";
+    let t1_value = Math.floor(ctx[14].similarity * 100) + "%";
     let t1;
     let t2;
     let inlinetext;
     let current;
-    const excerptheading_spread_levels = [{ ptk: ctx[1] }, { seq: ctx[0] }, ctx[13].ck];
+    const excerptheading_spread_levels = [{ ptk: ctx[2] }, { seq: ctx[1] }, ctx[14].ck];
     let excerptheading_props = {};
     for (let i = 0; i < excerptheading_spread_levels.length; i += 1) {
       excerptheading_props = assign(excerptheading_props, excerptheading_spread_levels[i]);
@@ -21185,9 +21307,9 @@
     excerptheading = new excerptheading_default({ props: excerptheading_props });
     inlinetext = new inlinetext_default({
       props: {
-        text: ctx[13].text,
-        ptk: ctx[1],
-        seq: ctx[0]
+        text: ctx[14].text,
+        ptk: ctx[2],
+        seq: ctx[1]
       }
     });
     return {
@@ -21209,21 +21331,21 @@
         current = true;
       },
       p(ctx2, dirty) {
-        const excerptheading_changes = dirty & 7 ? get_spread_update(excerptheading_spread_levels, [
-          dirty & 2 && { ptk: ctx2[1] },
-          dirty & 1 && { seq: ctx2[0] },
-          dirty & 4 && get_spread_object(ctx2[13].ck)
+        const excerptheading_changes = dirty & 22 ? get_spread_update(excerptheading_spread_levels, [
+          dirty & 4 && { ptk: ctx2[2] },
+          dirty & 2 && { seq: ctx2[1] },
+          dirty & 16 && get_spread_object(ctx2[14].ck)
         ]) : {};
         excerptheading.$set(excerptheading_changes);
-        if ((!current || dirty & 4) && t1_value !== (t1_value = Math.floor(ctx2[13].similarity * 100) + "%"))
+        if ((!current || dirty & 16) && t1_value !== (t1_value = Math.floor(ctx2[14].similarity * 100) + "%"))
           set_data(t1, t1_value);
         const inlinetext_changes = {};
+        if (dirty & 16)
+          inlinetext_changes.text = ctx2[14].text;
         if (dirty & 4)
-          inlinetext_changes.text = ctx2[13].text;
+          inlinetext_changes.ptk = ctx2[2];
         if (dirty & 2)
-          inlinetext_changes.ptk = ctx2[1];
-        if (dirty & 1)
-          inlinetext_changes.seq = ctx2[0];
+          inlinetext_changes.seq = ctx2[1];
         inlinetext.$set(inlinetext_changes);
       },
       i(local) {
@@ -21246,12 +21368,26 @@
       }
     };
   }
-  function create_fragment47(ctx) {
-    let t;
+  function create_fragment48(ctx) {
+    let t0;
+    let div;
+    let t1;
+    let paging;
+    let updating_from;
+    let t2;
     let each_1_anchor;
     let current;
-    let if_block = !ctx[2].length && create_if_block31(ctx);
-    let each_value = ctx[2];
+    let if_block = !ctx[4].length && create_if_block32(ctx);
+    function paging_from_binding(value) {
+      ctx[9](value);
+    }
+    let paging_props = { items: ctx[3] };
+    if (ctx[0] !== void 0) {
+      paging_props.from = ctx[0];
+    }
+    paging = new paging_default({ props: paging_props });
+    binding_callbacks.push(() => bind(paging, "from", paging_from_binding));
+    let each_value = ctx[4];
     let each_blocks = [];
     for (let i = 0; i < each_value.length; i += 1) {
       each_blocks[i] = create_each_block23(get_each_context23(ctx, each_value, i));
@@ -21263,7 +21399,11 @@
       c() {
         if (if_block)
           if_block.c();
-        t = space();
+        t0 = space();
+        div = element("div");
+        t1 = text("\u2248");
+        create_component(paging.$$.fragment);
+        t2 = space();
         for (let i = 0; i < each_blocks.length; i += 1) {
           each_blocks[i].c();
         }
@@ -21272,7 +21412,11 @@
       m(target, anchor) {
         if (if_block)
           if_block.m(target, anchor);
-        insert(target, t, anchor);
+        insert(target, t0, anchor);
+        insert(target, div, anchor);
+        append(div, t1);
+        mount_component(paging, div, null);
+        insert(target, t2, anchor);
         for (let i = 0; i < each_blocks.length; i += 1) {
           each_blocks[i].m(target, anchor);
         }
@@ -21280,19 +21424,28 @@
         current = true;
       },
       p(ctx2, [dirty]) {
-        if (!ctx2[2].length) {
+        if (!ctx2[4].length) {
           if (if_block) {
           } else {
-            if_block = create_if_block31(ctx2);
+            if_block = create_if_block32(ctx2);
             if_block.c();
-            if_block.m(t.parentNode, t);
+            if_block.m(t0.parentNode, t0);
           }
         } else if (if_block) {
           if_block.d(1);
           if_block = null;
         }
-        if (dirty & 7) {
-          each_value = ctx2[2];
+        const paging_changes = {};
+        if (dirty & 8)
+          paging_changes.items = ctx2[3];
+        if (!updating_from && dirty & 1) {
+          updating_from = true;
+          paging_changes.from = ctx2[0];
+          add_flush_callback(() => updating_from = false);
+        }
+        paging.$set(paging_changes);
+        if (dirty & 22) {
+          each_value = ctx2[4];
           let i;
           for (i = 0; i < each_value.length; i += 1) {
             const child_ctx = get_each_context23(ctx2, each_value, i);
@@ -21316,12 +21469,14 @@
       i(local) {
         if (current)
           return;
+        transition_in(paging.$$.fragment, local);
         for (let i = 0; i < each_value.length; i += 1) {
           transition_in(each_blocks[i]);
         }
         current = true;
       },
       o(local) {
+        transition_out(paging.$$.fragment, local);
         each_blocks = each_blocks.filter(Boolean);
         for (let i = 0; i < each_blocks.length; i += 1) {
           transition_out(each_blocks[i]);
@@ -21332,14 +21487,19 @@
         if (if_block)
           if_block.d(detaching);
         if (detaching)
-          detach(t);
+          detach(t0);
+        if (detaching)
+          detach(div);
+        destroy_component(paging);
+        if (detaching)
+          detach(t2);
         destroy_each(each_blocks, detaching);
         if (detaching)
           detach(each_1_anchor);
       }
     };
   }
-  function instance44($$self, $$props, $$invalidate) {
+  function instance45($$self, $$props, $$invalidate) {
     let displayitems;
     let { name: name2 } = $$props;
     let { lines } = $$props;
@@ -21348,11 +21508,12 @@
     let { ptk } = $$props;
     let { from } = $$props;
     let { similarity } = $$props;
+    let items = [];
     const LV = getContext("LV");
     let pfrom = from;
     async function load2() {
       await ptk.loadLines(lines);
-      $$invalidate(2, displayitems = lines.map((line, idx2) => {
+      $$invalidate(3, items = lines.map((line, idx2) => {
         const ck = ptk.getHeading(line);
         return {
           ck,
@@ -21368,55 +21529,68 @@
       LV.setFrom(dividx, from);
       pfrom = from;
     };
-    const openChunk = (bkid, tagname, id) => {
-      const address = makeElementId("bk", bkid) + "." + tagname + (parseInt(id) ? id : "#" + id);
-      LV.insertAddress(address, seq);
-    };
+    function paging_from_binding(value) {
+      from = value;
+      $$invalidate(0, from);
+    }
     $$self.$$set = ($$props2) => {
       if ("name" in $$props2)
-        $$invalidate(3, name2 = $$props2.name);
+        $$invalidate(5, name2 = $$props2.name);
       if ("lines" in $$props2)
-        $$invalidate(4, lines = $$props2.lines);
+        $$invalidate(6, lines = $$props2.lines);
       if ("seq" in $$props2)
-        $$invalidate(0, seq = $$props2.seq);
+        $$invalidate(1, seq = $$props2.seq);
       if ("dividx" in $$props2)
-        $$invalidate(5, dividx = $$props2.dividx);
+        $$invalidate(7, dividx = $$props2.dividx);
       if ("ptk" in $$props2)
-        $$invalidate(1, ptk = $$props2.ptk);
+        $$invalidate(2, ptk = $$props2.ptk);
       if ("from" in $$props2)
-        $$invalidate(6, from = $$props2.from);
+        $$invalidate(0, from = $$props2.from);
       if ("similarity" in $$props2)
-        $$invalidate(7, similarity = $$props2.similarity);
+        $$invalidate(8, similarity = $$props2.similarity);
     };
     $$self.$$.update = () => {
-      if ($$self.$$.dirty & 8) {
+      if ($$self.$$.dirty & 32) {
         $:
           name2;
       }
-      if ($$self.$$.dirty & 64) {
+      if ($$self.$$.dirty & 9) {
+        $:
+          $$invalidate(4, displayitems = items.slice(from, from + 5));
+      }
+      if ($$self.$$.dirty & 1) {
         $:
           setFrom(from);
       }
-      if ($$self.$$.dirty & 16) {
+      if ($$self.$$.dirty & 64) {
         $:
           load2(lines);
       }
     };
-    $:
-      $$invalidate(2, displayitems = []);
-    return [seq, ptk, displayitems, name2, lines, dividx, from, similarity];
+    return [
+      from,
+      seq,
+      ptk,
+      items,
+      displayitems,
+      name2,
+      lines,
+      dividx,
+      similarity,
+      paging_from_binding
+    ];
   }
   var Approx = class extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance44, create_fragment47, safe_not_equal, {
-        name: 3,
-        lines: 4,
-        seq: 0,
-        dividx: 5,
-        ptk: 1,
-        from: 6,
-        similarity: 7
+      init(this, options, instance45, create_fragment48, safe_not_equal, {
+        name: 5,
+        lines: 6,
+        seq: 1,
+        dividx: 7,
+        ptk: 2,
+        from: 0,
+        similarity: 8
       });
     }
   };
@@ -21450,7 +21624,7 @@
       }
     };
   }
-  function create_if_block32(ctx) {
+  function create_if_block33(ctx) {
     let librarymain;
     let current;
     librarymain = new librarymain_default({});
@@ -21477,13 +21651,13 @@
       }
     };
   }
-  function create_fragment48(ctx) {
+  function create_fragment49(ctx) {
     let t;
     let current_block_type_index;
     let if_block;
     let if_block_anchor;
     let current;
-    const if_block_creators = [create_if_block32, create_else_block7];
+    const if_block_creators = [create_if_block33, create_else_block7];
     const if_blocks = [];
     function select_block_type(ctx2, dirty) {
       if (ctx2[0])
@@ -21542,7 +21716,7 @@
       }
     };
   }
-  function instance45($$self, $$props, $$invalidate) {
+  function instance46($$self, $$props, $$invalidate) {
     let ready;
     initPainters({
       note: note_default,
@@ -21579,7 +21753,7 @@
   var App = class extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance45, create_fragment48, safe_not_equal, {});
+      init(this, options, instance46, create_fragment49, safe_not_equal, {});
     }
   };
   var app_default = App;

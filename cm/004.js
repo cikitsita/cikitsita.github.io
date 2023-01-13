@@ -1,4 +1,4 @@
-jsonp(4,{"name":"cm","start":5005},`^ck07z13h077
+jsonp(4,{"name":"cm","start":5007},`^ck07z13h077
 ^norm 中焦寒滯。
 ^chinese 太陰頭痛，夾食夾陰，寒滯，太陰脾瘧，虛脹。
 ^combo 陽虛+氣滯+陽鬰

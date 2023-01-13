@@ -1,4 +1,4 @@
-jsonp(9,{"name":"cm","start":17578},`^symtom ①神昏不語，不時煩擾，②神昏譫語，③煩躁狂言。
+jsonp(9,{"name":"cm","start":17580},`^symtom ①神昏不語，不時煩擾，②神昏譫語，③煩躁狂言。
 ^formulas
 ^formula〔導赤瀉心湯證〕
 ^origin〔《通俗傷寒論》方〕

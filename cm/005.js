@@ -1,4 +1,4 @@
-jsonp(5,{"name":"cm","start":7502},`^ck10z01h002
+jsonp(5,{"name":"cm","start":7504},`^ck10z01h002
 ^norm 風濕表證，風濕鬱熱。
 ^chinese 風濕化熱。
 ^ill〔腠理不宣〕

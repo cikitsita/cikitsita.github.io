@@ -1,4 +1,4 @@
-jsonp(0,{"starts":[8,2481,5005,7502,9903,12440,14858,17578,20104,22720,25227,27746,30145,32790,35402,37701,39918,41400,41404,41560,41807,42209,42487,42956,43191,43453,43717,43981,44303,44444,44850,45302,45577,46511,46515,46519,46523,46525,46527,46529,46532,46534,46536,46538,46541],"sectionnames":["0.off","medicine","manifest","version.off","zyzhx.off","_tokens","_postings","^ak","^bk","^ck","^ver","^f","^fn","^ill","^tounge","^pulse","^symtom","^ingredients"],"sectionstarts":[0,0,4,8,17,41400,41404,46511,46515,46519,46523,46525,46527,46529,46532,46534,46536,46538],"sectiontypes":["txt","tsv","tsv","txt","txt","tokens","postings","tag","tag","tag","tag","tag","tag","tag","tag","tag","tag","tag"],"preload":["medicine","manifest","_tokens","_toc"],"fulltext":["version.off","zyzhx.off"],"fulltextcaption":["version.off","zyzhx.off"],"eot":41400,"name":"cm","buildtime":"2023-01-12T08:39:04.664Z"},`^:<ptk=cm zh=醫古籍 en=cm lang=zh template=cm>
+jsonp(0,{"starts":[12,2483,5007,7504,9905,12442,14860,17580,20106,22722,25229,27748,30147,32792,35404,37703,39920,41402,41406,41562,41809,42211,42489,42958,43193,43455,43719,43983,44305,44446,44852,45304,45579,46512,46516,46520,46524,46526,46528,46530,46533,46535,46537,46539,46542],"sectionnames":["0.off","western","medicine","manifest","version.off","zyzhx.off","_tokens","_postings","^ak","^bk","^ck","^ver","^f","^fn","^ill","^tounge","^pulse","^symtom","^ingredients"],"sectionstarts":[0,0,4,8,12,19,41402,41406,46512,46516,46520,46524,46526,46528,46530,46533,46535,46537,46539],"sectiontypes":["txt","tsv","tsv","tsv","txt","txt","tokens","postings","tag","tag","tag","tag","tag","tag","tag","tag","tag","tag","tag"],"preload":["western","medicine","manifest","_tokens","_toc"],"fulltext":["version.off","zyzhx.off"],"fulltextcaption":["version.off","zyzhx.off"],"eot":41402,"name":"cm","buildtime":"2023-01-13T02:04:40.430Z"},`^:<ptk=cm zh=醫古籍 en=cm lang=zh template=cm>
 ^:chinese<caption=中醫>
 ^:western<caption=西醫>
 ^:sickloc<caption=病位>
@@ -38,4 +38,5 @@ jsonp(0,{"starts":[8,2481,5005,7502,9903,12440,14858,17578,20104,22720,25227,277
 ^:img<caption=圖>
 ^:fa<caption=法>
 ^:story<caption=故事>
-^:medicine<caption=藥>`)
+^:medicine<caption=藥>
+^:warning`)
