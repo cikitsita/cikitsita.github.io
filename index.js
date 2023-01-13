@@ -1020,11 +1020,11 @@
       while (idx2 > -1) {
         const at = this.at(idx2);
         const lp = at ? this.charpos[at - 1] : 0;
-        const lp2 = this.charpos[at];
-        if (idx2 > lp && idx2 < lp2 - 2) {
+        const lp2 = this.charpos[at] - 1 - infix.length;
+        if (idx2 > lp && idx2 < lp2) {
           out.push(at);
         }
-        idx2 = this.buf.indexOf(infix, lp2 + this.sep.length);
+        idx2 = this.buf.indexOf(infix, this.charpos[at] + this.sep.length);
       }
       this.middleCache[infix] = out;
       return out;
