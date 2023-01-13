@@ -6657,12 +6657,12 @@
         const pl = plTrim(postings[i], sectionfrom, sectionto);
         const [pllines, lineshits] = plContain(pl, ptk.inverted.tokenlinepos, true);
         const phraselen = phrases[i].length;
+        hitcount += pl.length;
         for (let j2 = 0; j2 < pllines.length; j2++) {
           const line = pllines[j2];
           if (!lineobj[line])
             lineobj[line] = [];
           lineobj[line].push(...lineshits[j2].map((it) => it * MAXPHRASELEN + phraselen));
-          hitcount++;
           const at2 = bsearchNumber(chunklinepos, line);
           if (!chunkobj[chunklinepos[at2]])
             chunkobj[chunklinepos[at2]] = true;
@@ -8204,7 +8204,6 @@
     }
   });
   var locals = (window.accelon22?.preload || "").split(",").filter((it) => !!it);
-  console.log(locals);
   var activePtkName = () => get_store_value(pitakas)[get_store_value(activepitaka)]?.name;
   lvaddr.subscribe((lva) => {
     updateUrl(lva);
@@ -17569,7 +17568,7 @@
         insert(target, span, anchor);
         append(span, t);
         if (!mounted) {
-          dispose = listen(span, "click", ctx[12]);
+          dispose = listen(span, "click", ctx[13]);
           mounted = true;
         }
       },
@@ -17600,7 +17599,7 @@
         insert(target, span, anchor);
         append(span, t);
         if (!mounted) {
-          dispose = listen(span, "click", ctx[13]);
+          dispose = listen(span, "click", ctx[14]);
           mounted = true;
         }
       },
@@ -17655,7 +17654,7 @@
         insert(target, span, anchor);
         append(span, t);
         if (!mounted) {
-          dispose = listen(span, "click", ctx[14]);
+          dispose = listen(span, "click", ctx[15]);
           mounted = true;
         }
       },
@@ -17681,13 +17680,13 @@
     let paging;
     let updating_from;
     let current;
-    let if_block0 = pitakas.length > 1 && create_if_block_42(ctx);
+    let if_block0 = ctx[7].length > 1 && create_if_block_42(ctx);
     let if_block1 = ctx[3] && create_if_block_33(ctx);
     let if_block2 = ctx[2] && create_if_block_24(ctx);
     let if_block3 = ctx[5] && create_if_block_111(ctx);
     let if_block4 = ctx[6] && create_if_block25(ctx);
     function paging_from_binding(value) {
-      ctx[15](value);
+      ctx[16](value);
     }
     let paging_props = { last: ctx[4] };
     if (ctx[0] !== void 0) {
@@ -17737,8 +17736,18 @@
         current = true;
       },
       p(ctx2, [dirty]) {
-        if (pitakas.length > 1)
-          if_block0.p(ctx2, dirty);
+        if (ctx2[7].length > 1) {
+          if (if_block0) {
+            if_block0.p(ctx2, dirty);
+          } else {
+            if_block0 = create_if_block_42(ctx2);
+            if_block0.c();
+            if_block0.m(div, t0);
+          }
+        } else if (if_block0) {
+          if_block0.d(1);
+          if_block0 = null;
+        }
         if (ctx2[3]) {
           if (if_block1) {
             if_block1.p(ctx2, dirty);
@@ -17825,6 +17834,8 @@
     };
   }
   function instance33($$self, $$props, $$invalidate) {
+    let $pitakas;
+    component_subscribe($$self, pitakas, ($$value) => $$invalidate(7, $pitakas = $$value));
     let { ptk } = $$props;
     let { name: name2 } = $$props;
     let { caption } = $$props;
@@ -17857,7 +17868,7 @@
       if ("ptk" in $$props2)
         $$invalidate(1, ptk = $$props2.ptk);
       if ("name" in $$props2)
-        $$invalidate(10, name2 = $$props2.name);
+        $$invalidate(11, name2 = $$props2.name);
       if ("caption" in $$props2)
         $$invalidate(2, caption = $$props2.caption);
       if ("tofind" in $$props2)
@@ -17867,7 +17878,7 @@
       if ("last" in $$props2)
         $$invalidate(4, last = $$props2.last);
       if ("seq" in $$props2)
-        $$invalidate(11, seq = $$props2.seq);
+        $$invalidate(12, seq = $$props2.seq);
       if ("hitcount" in $$props2)
         $$invalidate(5, hitcount = $$props2.hitcount);
       if ("chunk" in $$props2)
@@ -17881,6 +17892,7 @@
       last,
       hitcount,
       chunk,
+      $pitakas,
       setTofind,
       listChunk,
       openChunk,
@@ -17897,12 +17909,12 @@
       super();
       init(this, options, instance33, create_fragment33, safe_not_equal, {
         ptk: 1,
-        name: 10,
+        name: 11,
         caption: 2,
         tofind: 3,
         from: 0,
         last: 4,
-        seq: 11,
+        seq: 12,
         hitcount: 5,
         chunk: 6
       });
@@ -17985,19 +17997,19 @@
   // src/ownerdraw/excerpt.svelte
   function get_each_context16(ctx, list, i) {
     const child_ctx = ctx.slice();
-    child_ctx[22] = list[i];
-    child_ctx[24] = i;
+    child_ctx[23] = list[i];
+    child_ctx[25] = i;
     return child_ctx;
   }
   function create_if_block26(ctx) {
     let span;
-    let t0_value = " " + ctx[22].ck.caption;
+    let t0_value = " " + ctx[23].ck.caption;
     let t0;
     let t1;
     let mounted;
     let dispose;
     function click_handler() {
-      return ctx[17](ctx[22]);
+      return ctx[18](ctx[23]);
     }
     return {
       c() {
@@ -18017,7 +18029,7 @@
       },
       p(new_ctx, dirty) {
         ctx = new_ctx;
-        if (dirty & 256 && t0_value !== (t0_value = " " + ctx[22].ck.caption))
+        if (dirty & 512 && t0_value !== (t0_value = " " + ctx[23].ck.caption))
           set_data(t0, t0_value);
       },
       d(detaching) {
@@ -18036,19 +18048,19 @@
     let t;
     let abridge;
     let current;
-    const excerptheading_spread_levels = [{ ptk: ctx[4] }, { seq: ctx[3] }, ctx[22].ck];
+    const excerptheading_spread_levels = [{ ptk: ctx[5] }, { seq: ctx[3] }, ctx[23].ck];
     let excerptheading_props = {};
     for (let i = 0; i < excerptheading_spread_levels.length; i += 1) {
       excerptheading_props = assign(excerptheading_props, excerptheading_spread_levels[i]);
     }
     excerptheading = new excerptheading_default({ props: excerptheading_props });
-    const abridge_spread_levels = [ctx[22], { ptk: ctx[4] }];
+    const abridge_spread_levels = [ctx[23], { ptk: ctx[5] }];
     let abridge_props = {};
     for (let i = 0; i < abridge_spread_levels.length; i += 1) {
       abridge_props = assign(abridge_props, abridge_spread_levels[i]);
     }
     abridge = new abridge_default({ props: abridge_props });
-    let if_block = !ctx[7] && create_if_block26(ctx);
+    let if_block = !ctx[8] && create_if_block26(ctx);
     return {
       c() {
         div = element("div");
@@ -18068,18 +18080,18 @@
         current = true;
       },
       p(ctx2, dirty) {
-        const excerptheading_changes = dirty & 280 ? get_spread_update(excerptheading_spread_levels, [
-          dirty & 16 && { ptk: ctx2[4] },
+        const excerptheading_changes = dirty & 552 ? get_spread_update(excerptheading_spread_levels, [
+          dirty & 32 && { ptk: ctx2[5] },
           dirty & 8 && { seq: ctx2[3] },
-          dirty & 256 && get_spread_object(ctx2[22].ck)
+          dirty & 512 && get_spread_object(ctx2[23].ck)
         ]) : {};
         excerptheading.$set(excerptheading_changes);
-        const abridge_changes = dirty & 272 ? get_spread_update(abridge_spread_levels, [
-          dirty & 256 && get_spread_object(ctx2[22]),
-          dirty & 16 && { ptk: ctx2[4] }
+        const abridge_changes = dirty & 544 ? get_spread_update(abridge_spread_levels, [
+          dirty & 512 && get_spread_object(ctx2[23]),
+          dirty & 32 && { ptk: ctx2[5] }
         ]) : {};
         abridge.$set(abridge_changes);
-        if (!ctx2[7]) {
+        if (!ctx2[8]) {
           if (if_block) {
             if_block.p(ctx2, dirty);
           } else {
@@ -18121,23 +18133,24 @@
     let each_1_anchor;
     let current;
     function excerptbar_from_binding(value) {
-      ctx[16](value);
+      ctx[17](value);
     }
     let excerptbar_props = {
       caption: ctx[1],
-      ptk: ctx[4],
-      tofind: ctx[6],
-      last: ctx[5],
+      ptk: ctx[5],
+      tofind: ctx[7],
+      last: ctx[6],
       seq: ctx[3],
-      chunk: ctx[7],
-      action: ctx[2]
+      chunk: ctx[8],
+      action: ctx[2],
+      hitcount: ctx[4]
     };
     if (ctx[0] !== void 0) {
       excerptbar_props.from = ctx[0];
     }
     excerptbar = new excerptbar_default({ props: excerptbar_props });
     binding_callbacks.push(() => bind(excerptbar, "from", excerptbar_from_binding));
-    let each_value = ctx[8];
+    let each_value = ctx[9];
     let each_blocks = [];
     for (let i = 0; i < each_value.length; i += 1) {
       each_blocks[i] = create_each_block16(get_each_context16(ctx, each_value, i));
@@ -18167,26 +18180,28 @@
         const excerptbar_changes = {};
         if (dirty & 2)
           excerptbar_changes.caption = ctx2[1];
-        if (dirty & 16)
-          excerptbar_changes.ptk = ctx2[4];
-        if (dirty & 64)
-          excerptbar_changes.tofind = ctx2[6];
         if (dirty & 32)
-          excerptbar_changes.last = ctx2[5];
+          excerptbar_changes.ptk = ctx2[5];
+        if (dirty & 128)
+          excerptbar_changes.tofind = ctx2[7];
+        if (dirty & 64)
+          excerptbar_changes.last = ctx2[6];
         if (dirty & 8)
           excerptbar_changes.seq = ctx2[3];
-        if (dirty & 128)
-          excerptbar_changes.chunk = ctx2[7];
+        if (dirty & 256)
+          excerptbar_changes.chunk = ctx2[8];
         if (dirty & 4)
           excerptbar_changes.action = ctx2[2];
+        if (dirty & 16)
+          excerptbar_changes.hitcount = ctx2[4];
         if (!updating_from && dirty & 1) {
           updating_from = true;
           excerptbar_changes.from = ctx2[0];
           add_flush_callback(() => updating_from = false);
         }
         excerptbar.$set(excerptbar_changes);
-        if (dirty & 920) {
-          each_value = ctx2[8];
+        if (dirty & 1832) {
+          each_value = ctx2[9];
           let i;
           for (i = 0; i < each_value.length; i += 1) {
             const child_ctx = get_each_context16(ctx2, each_value, i);
@@ -18245,6 +18260,7 @@
     let { phraselength } = $$props;
     let { seq } = $$props;
     let { dividx } = $$props;
+    let { hitcount } = $$props;
     let { ptk } = $$props;
     let { last } = $$props;
     let { tofind: tofind2 } = $$props;
@@ -18254,7 +18270,7 @@
     let pfrom = from;
     async function load2() {
       await ptk.loadLines(lines);
-      $$invalidate(8, displayitems = lines.map((line, idx2) => {
+      $$invalidate(9, displayitems = lines.map((line, idx2) => {
         const ck = ptk.getHeading(line);
         return {
           ck,
@@ -18286,30 +18302,32 @@
       if ("action" in $$props2)
         $$invalidate(2, action = $$props2.action);
       if ("name" in $$props2)
-        $$invalidate(10, name2 = $$props2.name);
+        $$invalidate(11, name2 = $$props2.name);
       if ("lines" in $$props2)
-        $$invalidate(11, lines = $$props2.lines);
+        $$invalidate(12, lines = $$props2.lines);
       if ("hits" in $$props2)
-        $$invalidate(12, hits = $$props2.hits);
+        $$invalidate(13, hits = $$props2.hits);
       if ("phraselength" in $$props2)
-        $$invalidate(13, phraselength = $$props2.phraselength);
+        $$invalidate(14, phraselength = $$props2.phraselength);
       if ("seq" in $$props2)
         $$invalidate(3, seq = $$props2.seq);
       if ("dividx" in $$props2)
-        $$invalidate(14, dividx = $$props2.dividx);
+        $$invalidate(15, dividx = $$props2.dividx);
+      if ("hitcount" in $$props2)
+        $$invalidate(4, hitcount = $$props2.hitcount);
       if ("ptk" in $$props2)
-        $$invalidate(4, ptk = $$props2.ptk);
+        $$invalidate(5, ptk = $$props2.ptk);
       if ("last" in $$props2)
-        $$invalidate(5, last = $$props2.last);
+        $$invalidate(6, last = $$props2.last);
       if ("tofind" in $$props2)
-        $$invalidate(6, tofind2 = $$props2.tofind);
+        $$invalidate(7, tofind2 = $$props2.tofind);
       if ("from" in $$props2)
         $$invalidate(0, from = $$props2.from);
       if ("samechunkline" in $$props2)
-        $$invalidate(15, samechunkline = $$props2.samechunkline);
+        $$invalidate(16, samechunkline = $$props2.samechunkline);
     };
     $$self.$$.update = () => {
-      if ($$self.$$.dirty & 1024) {
+      if ($$self.$$.dirty & 2048) {
         $:
           name2;
       }
@@ -18317,22 +18335,23 @@
         $:
           setFrom(from);
       }
-      if ($$self.$$.dirty & 2048) {
+      if ($$self.$$.dirty & 4096) {
         $:
           load2(lines);
       }
-      if ($$self.$$.dirty & 32784) {
+      if ($$self.$$.dirty & 65568) {
         $:
-          $$invalidate(7, chunk = samechunkline > -1 ? ptk.getHeading(samechunkline) : null);
+          $$invalidate(8, chunk = samechunkline > -1 ? ptk.getHeading(samechunkline) : null);
       }
     };
     $:
-      $$invalidate(8, displayitems = []);
+      $$invalidate(9, displayitems = []);
     return [
       from,
       caption,
       action,
       seq,
+      hitcount,
       ptk,
       last,
       tofind2,
@@ -18355,17 +18374,18 @@
       init(this, options, instance35, create_fragment35, safe_not_equal, {
         caption: 1,
         action: 2,
-        name: 10,
-        lines: 11,
-        hits: 12,
-        phraselength: 13,
+        name: 11,
+        lines: 12,
+        hits: 13,
+        phraselength: 14,
         seq: 3,
-        dividx: 14,
-        ptk: 4,
-        last: 5,
-        tofind: 6,
+        dividx: 15,
+        hitcount: 4,
+        ptk: 5,
+        last: 6,
+        tofind: 7,
         from: 0,
-        samechunkline: 15
+        samechunkline: 16
       });
     }
   };
@@ -18695,17 +18715,46 @@
   var bmeresult_default = Bmeresult;
 
   // src/ownerdraw/queryresult.svelte
-  function create_fragment37(ctx) {
-    let t0_value = ctx[5].name + "";
-    let t0;
+  function create_if_block28(ctx) {
     let span;
+    let t_value = ctx[5].humanName(true) + "";
+    let t;
+    let span_title_value;
+    return {
+      c() {
+        span = element("span");
+        t = text(t_value);
+        attr(span, "title", span_title_value = ctx[5].humanName());
+      },
+      m(target, anchor) {
+        insert(target, span, anchor);
+        append(span, t);
+      },
+      p(ctx2, dirty) {
+        if (dirty & 32 && t_value !== (t_value = ctx2[5].humanName(true) + ""))
+          set_data(t, t_value);
+        if (dirty & 32 && span_title_value !== (span_title_value = ctx2[5].humanName())) {
+          attr(span, "title", span_title_value);
+        }
+      },
+      d(detaching) {
+        if (detaching)
+          detach(span);
+      }
+    };
+  }
+  function create_fragment37(ctx) {
+    let t0;
+    let span0;
     let t1;
     let t2;
+    let span1;
     let t3_value = ctx[6].length + "";
     let t3;
     let t4;
     let bmeresult;
     let current;
+    let if_block = ctx[10].length > 1 && create_if_block28(ctx);
     bmeresult = new bmeresult_default({
       props: {
         seq: ctx[9],
@@ -18721,28 +18770,45 @@
     });
     return {
       c() {
-        t0 = text(t0_value);
-        span = element("span");
+        if (if_block)
+          if_block.c();
+        t0 = space();
+        span0 = element("span");
         t1 = text(ctx[0]);
-        t2 = text("(");
+        t2 = space();
+        span1 = element("span");
         t3 = text(t3_value);
-        t4 = text(")");
+        t4 = space();
         create_component(bmeresult.$$.fragment);
-        attr(span, "class", "field");
+        attr(span0, "class", "field");
+        attr(span1, "class", "hitcount");
       },
       m(target, anchor) {
+        if (if_block)
+          if_block.m(target, anchor);
         insert(target, t0, anchor);
-        insert(target, span, anchor);
-        append(span, t1);
+        insert(target, span0, anchor);
+        append(span0, t1);
         insert(target, t2, anchor);
-        insert(target, t3, anchor);
+        insert(target, span1, anchor);
+        append(span1, t3);
         insert(target, t4, anchor);
         mount_component(bmeresult, target, anchor);
         current = true;
       },
       p(ctx2, [dirty]) {
-        if ((!current || dirty & 32) && t0_value !== (t0_value = ctx2[5].name + ""))
-          set_data(t0, t0_value);
+        if (ctx2[10].length > 1) {
+          if (if_block) {
+            if_block.p(ctx2, dirty);
+          } else {
+            if_block = create_if_block28(ctx2);
+            if_block.c();
+            if_block.m(t0.parentNode, t0);
+          }
+        } else if (if_block) {
+          if_block.d(1);
+          if_block = null;
+        }
         if (!current || dirty & 1)
           set_data(t1, ctx2[0]);
         if ((!current || dirty & 64) && t3_value !== (t3_value = ctx2[6].length + ""))
@@ -18779,14 +18845,16 @@
         current = false;
       },
       d(detaching) {
+        if (if_block)
+          if_block.d(detaching);
         if (detaching)
           detach(t0);
         if (detaching)
-          detach(span);
+          detach(span0);
         if (detaching)
           detach(t2);
         if (detaching)
-          detach(t3);
+          detach(span1);
         if (detaching)
           detach(t4);
         destroy_component(bmeresult, detaching);
@@ -18794,6 +18862,8 @@
     };
   }
   function instance37($$self, $$props, $$invalidate) {
+    let $pitakas;
+    component_subscribe($$self, pitakas, ($$value) => $$invalidate(10, $pitakas = $$value));
     let { caption } = $$props;
     let { tofind: tofind2 } = $$props;
     let { name: name2 } = $$props;
@@ -18826,7 +18896,19 @@
       if ("seq" in $$props2)
         $$invalidate(9, seq = $$props2.seq);
     };
-    return [caption, tofind2, name2, foreign, tagname, ptk, items, lexicon, backref, seq];
+    return [
+      caption,
+      tofind2,
+      name2,
+      foreign,
+      tagname,
+      ptk,
+      items,
+      lexicon,
+      backref,
+      seq,
+      $pitakas
+    ];
   }
   var Queryresult = class extends SvelteComponent {
     constructor(options) {
@@ -18854,7 +18936,7 @@
     child_ctx[20] = i;
     return child_ctx;
   }
-  function create_if_block28(ctx) {
+  function create_if_block29(ctx) {
     let span;
     let t_value = "\u3000" + ctx[18].count;
     let t;
@@ -18902,7 +18984,7 @@
     function click_handler() {
       return ctx[13](ctx[18]);
     }
-    let if_block = ctx[18].count >= 0 && create_if_block28(ctx);
+    let if_block = ctx[18].count >= 0 && create_if_block29(ctx);
     return {
       c() {
         div = element("div");
@@ -18936,7 +19018,7 @@
           if (if_block) {
             if_block.p(ctx, dirty);
           } else {
-            if_block = create_if_block28(ctx);
+            if_block = create_if_block29(ctx);
             if_block.c();
             if_block.m(div, null);
           }
@@ -19639,7 +19721,7 @@
   var versioninfo_default = Versioninfo;
 
   // src/ownerdraw/setting.svelte
-  function create_if_block29(ctx) {
+  function create_if_block30(ctx) {
     let t0_value = _("Pali:") + "";
     let t0;
     let t1;
@@ -19725,7 +19807,7 @@
         storeid: tosim
       }
     });
-    let if_block = show_if && create_if_block29(ctx);
+    let if_block = show_if && create_if_block30(ctx);
     versioninfo = new versioninfo_default({});
     return {
       c() {
@@ -20268,7 +20350,7 @@
       }
     };
   }
-  function create_if_block30(ctx) {
+  function create_if_block31(ctx) {
     let span;
     let t0_value = ctx[6].length + "";
     let t0;
@@ -20377,7 +20459,7 @@
     let if_block;
     let if_block_anchor;
     let current;
-    const if_block_creators = [create_if_block30, create_if_block_112];
+    const if_block_creators = [create_if_block31, create_if_block_112];
     const if_blocks = [];
     function select_block_type(ctx2, dirty) {
       if (ctx2[6].length)
@@ -20844,7 +20926,7 @@
       }
     };
   }
-  function create_if_block31(ctx) {
+  function create_if_block32(ctx) {
     let guidefilter;
     let current;
     guidefilter = new guidefilter_default({
@@ -21114,7 +21196,7 @@
     let if_block;
     let if_block_anchor;
     let current;
-    const if_block_creators = [create_if_block31, create_if_block_113];
+    const if_block_creators = [create_if_block32, create_if_block_113];
     const if_blocks = [];
     function select_block_type(ctx2, dirty) {
       if (!ctx2[1])
@@ -21272,7 +21354,7 @@
     child_ctx[14] = list[i];
     return child_ctx;
   }
-  function create_if_block32(ctx) {
+  function create_if_block33(ctx) {
     let t;
     return {
       c() {
@@ -21374,7 +21456,7 @@
     let t2;
     let each_1_anchor;
     let current;
-    let if_block = !ctx[4].length && create_if_block32(ctx);
+    let if_block = !ctx[4].length && create_if_block33(ctx);
     function paging_from_binding(value) {
       ctx[9](value);
     }
@@ -21424,7 +21506,7 @@
         if (!ctx2[4].length) {
           if (if_block) {
           } else {
-            if_block = create_if_block32(ctx2);
+            if_block = create_if_block33(ctx2);
             if_block.c();
             if_block.m(t0.parentNode, t0);
           }
@@ -21621,7 +21703,7 @@
       }
     };
   }
-  function create_if_block33(ctx) {
+  function create_if_block34(ctx) {
     let librarymain;
     let current;
     librarymain = new librarymain_default({});
@@ -21654,7 +21736,7 @@
     let if_block;
     let if_block_anchor;
     let current;
-    const if_block_creators = [create_if_block33, create_else_block7];
+    const if_block_creators = [create_if_block34, create_else_block7];
     const if_blocks = [];
     function select_block_type(ctx2, dirty) {
       if (ctx2[0])
