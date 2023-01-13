@@ -1,0 +1,16 @@
+{
+    "name": "Accelon22",
+    "short_name": "accelon22",
+    "description": "Accelon22",
+    "icons": [
+        {
+            "src": "accelon.png",
+            "sizes": "128x128",
+            "type": "image/png"
+        }
+    ],
+    "start_url": "",
+    "display": "fullscreen",
+    "theme_color": "#34a1ff",
+    "background_color": "#34a1ff"
+}

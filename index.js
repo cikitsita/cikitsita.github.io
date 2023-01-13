@@ -8197,7 +8197,8 @@
     }
   });
   var locals = (window.accelon22?.preload || "").split(",").filter((it) => !!it);
-  var activePtkName = () => get_store_value(pitakas)[get_store_value(activepitaka)].name;
+  console.log(locals);
+  var activePtkName = () => get_store_value(pitakas)[get_store_value(activepitaka)]?.name;
   lvaddr.subscribe((lva) => {
     updateUrl(lva);
   });
@@ -21421,6 +21422,16 @@
   };
   var approx_default = Approx;
 
+  // ../ptk/platform/pwa.js
+  function registerServiceWorker(swfn = "./sw.js") {
+    const p2 = document.location.protocol;
+    const h = document.location.hostname;
+    const localhost = p2 == "http:" && (h == "127.0.0.1" || h == "localhost");
+    if ("serviceWorker" in navigator && (localhost || p2 == "https:")) {
+      navigator.serviceWorker.register(swfn);
+    }
+  }
+
   // src/app.svelte
   function create_else_block7(ctx) {
     let t;
@@ -21556,6 +21567,7 @@
       guide: guide_default,
       approx: approx_default
     });
+    registerServiceWorker();
     onMount(async () => {
       await openPitakas();
       $$invalidate(0, ready = true);

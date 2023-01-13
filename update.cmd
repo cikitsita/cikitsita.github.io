@@ -4,3 +4,4 @@ copy/y \2022\accelon22\dist\*.*
 del codemirror.*
 del index-toolbox.*
 del *.otf
+del index-android.html
