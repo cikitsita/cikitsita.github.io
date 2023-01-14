@@ -7447,7 +7447,7 @@
     { prefix: "b", caption: "\u{1F9D1}", factors: ["\u982D\u75DB", "\u982D\u6688", "\u982D\u91CD", "\u982D\u8139"] },
     { prefix: "c", caption: "\u{1F610}", factors: ["\u767D", "\u9EC3"], include: "\u9762,\u81C9" },
     { prefix: "d", caption: "\u{1F9B5}", factors: ["\u51B7", "\u62BD\u6410", "\u986B,\u6296"], inluce: "\u624B,\u8DB3,\u80A2" },
-    { prefix: "g", caption: "\u{1F930}", factors: ["\u8179\u75DB", "\u8179\u8139", "\u80F8\u60B6"] },
+    { prefix: "g", caption: "\u{1F930}", factors: ["\u8179\u75DB,\u8179\u75BC", "\u8179\u8139", "\u80F8\u60B6"] },
     { prefix: "h", caption: "\u{1F42A}", factors: ["\u8170\u9178,\u8170\u75E0", "\u8170\u75DB", "\u80CC\u75DB"] },
     { prefix: "e", caption: "\u2744\uFE0F", factors: ["\u5BD2,\u754F\u5BD2,\u60E1\u5BD2", "\u60E1\u98A8"] },
     { prefix: "f", caption: "\u2668\uFE0F", factors: ["\u767C\u71B1,\u58EF\u71B1", "\u5C11\u71B1", "\u5BD2\u71B1"] },
@@ -8007,7 +8007,7 @@
         obj[gkey] = 0;
       obj[gkey]++;
     }
-    return fromObj(obj, (code, count) => [factorString(code, groupby), count, code]);
+    return fromObj(obj, (code, count) => [factorString(code, groupby), count, code]).sort((a, b) => b[1] - a[1]);
   };
   var matchGroup = (ck, groupby, groupfilter) => {
     if (groupby && groupfilter) {
@@ -8080,41 +8080,44 @@
       return ["\u540D", "\u4F4D", "\u56E0", "\u8B49", "\u5019"];
     }
   };
-  var factorSimilarity = (symtoms, str) => {
-    const len = str.length / 2, count = symtoms.length;
+  var factorSimilarity = (factors, str) => {
+    const len = str.length / 2, count = factors.length;
     let match = 0;
-    for (let i = 0; i < symtoms.length; i++) {
-      if (~str.indexOf(symtoms[i]))
+    for (let i = 0; i < factors.length; i++) {
+      if (~str.indexOf(factors[i]))
         match++;
     }
     const r = match * 2 / (len + count);
-    if (r > 1)
-      console.log(match, len, count, symtoms, str);
     return r;
   };
-  var getApprox = (ptk, tagname, id) => {
+  var similarFactors = (ptk, tagname, factors) => {
     const out = [];
-    const at = bsearchNumber(ptk.defines.ill.linepos, id) - 1;
-    const v = ptk.columns.manifest[tagname][at];
-    const values = v.split(/([a-z]\d)/).filter((it) => !!it);
     for (let i = 0; i < ptk.columns.manifest[tagname].length; i++) {
       const str = ptk.columns.manifest[tagname][i];
-      if (!str || i == at)
+      if (!str)
         continue;
-      const similarity = factorSimilarity(values, str);
+      const similarity = factorSimilarity(factors, str);
       if (similarity > 0.5) {
         const illline = ptk.defines.ill.linepos[i];
         const at2 = bsearchNumber(ptk.defines[tagname].linepos, illline);
-        const id2 = i;
-        out.push({ id: id2, similarity, line: ptk.defines[tagname].linepos[at2] });
+        const id = i;
+        out.push({ i, id, similarity, line: ptk.defines[tagname].linepos[at2] });
       }
       out.sort((a, b) => b.similarity - a.similarity);
     }
     return out;
   };
+  var getApprox = (ptk, tagname, id) => {
+    const at = bsearchNumber(ptk.defines.ill.linepos, id) - 1;
+    const v = ptk.columns.manifest[tagname][at];
+    const factors = v.split(/([a-z]\d)/).filter((it) => !!it);
+    const out = similarFactors(ptk, tagname, factors).filter((it) => it.i !== at);
+    return out;
+  };
   addTemplate("cm", {
     filterColumn: "manifest",
     getApprox,
+    similarFactors,
     parseChoice,
     stringifyChoice,
     humanChoice,
@@ -10885,7 +10888,7 @@
     let switch_instance;
     let switch_instance_anchor;
     let current;
-    const switch_instance_spread_levels = [{ seq: ctx[1] }, ctx[13]];
+    const switch_instance_spread_levels = [{ seq: ctx[1] }, ctx[13].data, { line: ctx[2] }];
     var switch_value = Painters[ctx[13].painter];
     function switch_props(ctx2) {
       let switch_instance_props = {};
@@ -10911,9 +10914,10 @@
         current = true;
       },
       p(ctx2, dirty) {
-        const switch_instance_changes = dirty & 66 ? get_spread_update(switch_instance_spread_levels, [
+        const switch_instance_changes = dirty & 70 ? get_spread_update(switch_instance_spread_levels, [
           dirty & 2 && { seq: ctx2[1] },
-          dirty & 64 && get_spread_object(ctx2[13])
+          dirty & 64 && get_spread_object(ctx2[13].data),
+          dirty & 4 && { line: ctx2[2] }
         ]) : {};
         if (switch_value !== (switch_value = Painters[ctx2[13].painter])) {
           if (switch_instance) {
@@ -11165,7 +11169,7 @@
         }
       },
       p(ctx2, [dirty]) {
-        if (dirty & 66) {
+        if (dirty & 70) {
           each_value = ctx2[6];
           let i;
           for (i = 0; i < each_value.length; i += 1) {
@@ -11810,7 +11814,7 @@
     const render = (text3, line2) => {
       const [units2, ot] = renderOfftext(text3, { line: line2 });
       $$invalidate(16, extra = getExtraPainter(ptk, ot, "backref", true).concat(getExtraPainter(ptk, ot, "backlink")));
-      $$invalidate(15, activelinemenu = getExtraPainter(ot, "activelinemenu"));
+      $$invalidate(15, activelinemenu = getExtraPainter(ptk, ot, "activelinemenu"));
       return units2;
     };
     $$self.$$set = ($$props2) => {
